@@ -1,6 +1,6 @@
 ---
 name: refine-city
-description: Improvement rounds for a generated city — correct individual houses, a whole street or an area (heights, storeys, roof shapes, colours, materials, shopfronts, road surfaces) from Google Street View and satellite views, or hand-model landmarks in Blender. Use when the user says a building/street looks wrong, asks to "förbättra/förfina Storgatan", "make the cathedral look right", "run a refinement pass", or wants more realism in a built city.
+description: Improvement rounds for a generated city — correct individual houses, a whole street or an area (heights, storeys, roof shapes, colours, materials, shopfronts, road surfaces) from Google Street View, satellite views and the user's own photos, or hand-model landmarks in Blender. Use when the user says a building/street looks wrong, asks to "förbättra/förfina Storgatan", "make the cathedral look right", "run a refinement pass", or wants more realism in a built city.
 ---
 
 # Refine a city from Street View
@@ -28,7 +28,11 @@ pass. Three levels, cheapest first:
    roof shapes use the satellite view `https://www.google.com/maps/@<lat>,<lon>,60m/data=!3m1!1e3`.
    Count storeys, note wall colour/material, roof shape and colour, shopfronts, towers, gables.
    Street View is a visual reference only: do **not** save Google imagery into the repository.
-   Ask the user for local knowledge when something is unclear.
+   **Photos and other pictures:** look in `cities/<slug>/references/` for the user's own photos,
+   drawings or postcards (ask what each shows if the file name doesn't say). Openly licensed photos can
+   be found on Wikimedia Commons (`https://commons.wikimedia.org/w/index.php?search=<landmark>`); if you
+   download one, keep it in `references/` with its licence and author in `references/SOURCES.md`.
+   Ask the user for local knowledge when something is unclear — it often beats any picture.
 4. **Write overrides** (merge into the existing file, keep earlier entries):
    ```json
    {
@@ -58,7 +62,7 @@ pass. Three levels, cheapest first:
    ```
    Put each render next to its Street View screenshot and adjust. Two or three iterations are normal.
 6. **Log the round** in `cities/<slug>/refinements.md`: date, scope, what changed and why (Street View
-   date/heading, user knowledge). This is the project's memory for later rounds.
+   date/heading, which photo in `references/`, user knowledge). This is the project's memory for later rounds.
 
 ## Custom models for landmarks
 

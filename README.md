@@ -5,14 +5,23 @@ street — and an AI coding agent (Claude Code or Codex) builds it: real streets
 OpenStreetMap, an editable 3D city in Blender, and a browser game where armored cars fight raiders
 through *your* streets. The title, splash screen, narrator and radio are made for the place.
 
-![The generated Visby game's start screen](docs/images/visby-menu.jpg)
+![Kalmar Wasteland, the game this template comes from](docs/images/kalmar-wasteland-menu.jpg)
 
-![Visby, generated from OpenStreetMap](docs/images/visby-overview.jpg)
+*[Kalmar Wasteland](https://bjarby.com/kalmar-wasteland/) — the game this template was extracted from.
+Its city went through more than 140 refinement rounds against Google Street View, photos and drawings
+([kalmar-kvarnholmen](https://github.com/fltman/kalmar-kvarnholmen)). Your town starts from the
+generator and gets there the same way, one street at a time.*
 
 | | |
 |---|---|
-| ![Street level](docs/images/visby-street.jpg) | ![Default splash screen](docs/images/visby-default-splash.jpg) |
-| Stora torget, Visby — generated facades, paving, benches and lamps | The menu art Blender renders when no AI image is made |
+| ![Street War on Storgatan, Kalmar](docs/images/kalmar-storgatan-war.jpg) | ![Refined facades and cobbles](docs/images/kalmar-street.jpg) |
+| Street War on Storgatan: raiders, awnings, trees, benches | Facades refined from Street View, house by house |
+| ![Stortorget in the dust](docs/images/kalmar-stortorget.jpg) | ![The driver's seat](docs/images/kalmar-cockpit.jpg) |
+| Stortorget at dusk, looking back across the square | The driver's seat: dials, warning lamps, cracked glass |
+
+![Tactical map of Kalmar](docs/images/kalmar-map.jpg)
+
+*Screenshots from the published game at [bjarby.com/kalmar-wasteland](https://bjarby.com/kalmar-wasteland/).*
 
 ## Quick start
 
@@ -59,12 +68,44 @@ python3 wasteland.py make "Lund" --size small   # small 600 m · medium 1 km (de
 The game: three armored machines, machine guns, homing rockets, a flamethrower and mines, three waves of
 raiders, free roam, and an **online arena** for up to eight friends.
 
+## Refinement rounds: from generated to real
+
+The generator gets the street plan and every building footprint right, because they come from
+OpenStreetMap. Storeys, colours, roofs and facades are *estimated* where the map says nothing — fine
+for a game, but not yet *your* town. Refinement rounds fix that from pictures, the same way the Kalmar
+city above was built:
+
+1. **Pick a street, a square or one landmark** — *"refine Strandgatan"*, *"make the cathedral look right"*.
+2. **The agent looks at reality.** `python3 wasteland.py buildings <slug> --street "Strandgatan"` lists
+   each house with what the generator guessed and a **Google Street View** link aimed at its facade.
+   With browser access (Claude in Chrome, Codex's browser) the agent opens every view, plus the
+   satellite view for roof shapes, and counts storeys, reads wall colours and materials, roof shapes,
+   shopfronts, gables and towers.
+3. **Your own pictures count too.** Put photos you took (or openly licensed ones, e.g. from Wikimedia
+   Commons) in `cities/<slug>/references/` and say what they show; drawings and old postcards work as
+   well. Local knowledge beats any camera: tell the agent what you know.
+4. **Corrections, not guesswork.** Observations go into `cities/<slug>/overrides.json` — per building,
+   for whole areas or for streets (cobbles, widths, sidewalks). Landmarks that need real shapes get a
+   hand-written Blender model (`cities/<slug>/custom/<id>.py`,
+   [example](docs/custom-building-example.py)).
+5. **Rebuild and compare.** `python3 wasteland.py rebuild <slug>` (about a minute) and
+   `python3 wasteland.py render <slug> --street "Strandgatan"` renders the street from the same
+   viewpoints, so the agent can put its images next to Street View and iterate.
+6. **Logged.** Every round is written to `cities/<slug>/refinements.md` (what changed, from which view
+   or photo), so the next round — or the next person — continues where it stopped.
+
+Street View is used only to look; no Google imagery is stored in the project or the game. The skill
+behind this is [`refine-city`](.agents/skills/refine-city/SKILL.md).
+
+| Straight from the generator (Visby, ~1 minute) | After a custom-model round (example church) |
+|---|---|
+| ![Generated street](docs/images/visby-street.jpg) | ![Custom church](docs/images/custom-church-example.jpg) |
+
 ## Make it yours
 
 | | How | Needs |
 |---|---|---|
-| **Refinement rounds** for a street, an area or one building, from Street View | `refine-city` skill · `wasteland.py buildings / rebuild / render` | — |
-| **Hand-modelled landmarks** | a Blender script per building, see [docs/custom-building-example.py](docs/custom-building-example.py) | — |
+| **Refinement rounds** from Google Street View, satellite views and your own photos (see above) | `refine-city` skill · `wasteland.py buildings / rebuild / render` | a browser tool for Street View |
 | **Splash art** with your town's landmarks | `imagegen` skill | Codex (built in), or `OPENAI_API_KEY` / `OPENROUTER_API_KEY` |
 | **Narrator** who names your town | `elevenlabs` skill · `wasteland.py voices` | `ELEVENLABS_API_KEY` |
 | **Soundtrack** | `suno-music` skill · `wasteland.py music --add` | a Suno account (web), or any MP3 |
@@ -72,8 +113,6 @@ raiders, free roam, and an **online arena** for up to eight friends.
 
 Keys go in `.env` (copy `.env.example`). Everything is optional: without keys the game uses generic
 narrator lines, the bundled soundtrack and a Blender-rendered splash screen.
-
-![A refinement example: a church modelled by a custom script](docs/images/custom-church-example.jpg)
 
 ## Publish
 
@@ -98,9 +137,14 @@ game and its city contract.
 
 Klona repot, öppna mappen i Claude Code eller Codex och skriv till exempel *"Bygg Visby"*. Agenten
 installerar det som behövs, hämtar kartdata från OpenStreetMap, bygger staden i Blender och startar
-spelet på http://localhost:5220 med stadens namn, en egen startbild, berättarröst och musik. Be sedan
-om förbättringsrundor för enskilda hus, gator eller områden utifrån Street View, eller om en server på
-t.ex. Vultr så att ni kan spela online tillsammans.
+spelet på http://localhost:5220 med stadens namn, en egen startbild, berättarröst och musik.
+
+Sedan gör ni **förbättringsrundor**: välj en gata, ett torg eller ett hus (*"förbättra Strandgatan"*).
+Agenten öppnar Google Street View och satellitvyn för varje fasad, jämför med sina egna renderingar
+från samma vinkel och rättar våningar, färger, material, tak och skyltfönster — eller modellerar
+landmärken för hand i Blender. Egna foton (lägg dem i `cities/<ort>/references/`) och lokalkännedom
+fungerar lika bra. Det är så staden i [Kalmar Wasteland](https://bjarby.com/kalmar-wasteland/) har
+byggts upp, runda för runda. Be också om en server på t.ex. Vultr så att ni kan spela online tillsammans.
 
 ## Credits and licenses
 

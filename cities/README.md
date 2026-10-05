@@ -14,6 +14,7 @@ One folder per generated place (git-ignored — they are large and rebuildable):
 | `overrides.json` | you / refine-city | **yes**: corrected buildings, areas, roads |
 | `custom/<id>.py` | you / refine-city | **yes**: hand-modelled buildings |
 | `media/` | imagegen, voices, music | **yes**: splash.jpg, voice-*.mp3, music/ |
+| `references/` | you | your own photos, drawings, openly licensed pictures (+ `SOURCES.md`) for refinement rounds |
 | `refinements.md` | refine-city | log of improvement rounds |
 | `renders/` | `render` | review images |
 
