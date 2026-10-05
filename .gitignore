@@ -1,0 +1,19 @@
+# Local environments and secrets
+.venv/
+.env
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+.claude/settings.local.json
+
+# Generated per machine / per city (rebuild with `python3 wasteland.py build <slug>`)
+cache/
+cities/*
+!cities/README.md
+game/public/city
+game/public/city-slug.txt
+game/dist/
+game/test-results/
+game/public/audio/.segments/
+*.blend1

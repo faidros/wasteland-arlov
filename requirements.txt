@@ -1,0 +1,7 @@
+# Python packages for the pipeline (installed into .venv by `python3 wasteland.py doctor`).
+shapely>=2.1,<3
+numpy>=2.0,<3
+Pillow>=10
+# Optional AI services used by the skills
+elevenlabs>=1.0
+python-dotenv>=1.0

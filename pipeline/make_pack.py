@@ -1,0 +1,206 @@
+"""Write the game's city pack: cities/<slug>/pack/{map.json, config.json} (tiles/ comes from tiles.mjs).
+
+config.json holds everything place-specific the game shows or needs: names and texts (from
+cities/<slug>/theme.json when present), spawn point, map labels, districts, squares, supply
+targets, ambient fires, world bounds, splash image, voices and music.
+
+Game coordinates are three.js: x east, z south (= -north), metres from the place centre.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import shutil
+
+from shapely.geometry import LineString, Point, Polygon, box
+from shapely.strtree import STRtree
+
+from common import city_dir, load_place, say, step_done, write_json
+
+DRIVABLE = {'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'living_street', 'pedestrian', 'service',
+            'primary_link', 'secondary_link', 'tertiary_link', 'road', 'busway'}
+MAIN = {'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential'}
+
+DEFAULT_TEXT = {
+    'eyebrow': 'THE STREETS ARE YOURS. KEEP THEM.',
+    'tagline': 'Same streets. New rules.',
+    'intro': 'Take an armored machine into the streets of {Name}.<br>Hunt the raiders. Scavenge the wrecks. Make it home.',
+    'win_eyebrow': '{NAME} IS YOURS',
+    'start_roam': 'DRIVE {NAME}',
+    'explore': 'EXPLORE {NAME}',
+    'loading': 'Loading {Name}…',
+    'ready': '{Name} is ready',
+    'map_title': '{NAME} / TACTICAL MAP',
+    'description': 'Armored cars. Real {Name} streets. An open-world browser combat game.',
+}
+
+
+def tz(p):
+    """Local (x east, y north) → game (x, z)."""
+    return [round(p[0], 1), round(-p[1], 1)]
+
+
+def dms(v, pos, neg):
+    d = abs(v)
+    return f'{int(d)}°{int(round((d - int(d)) * 60)):02d}′ {pos if v >= 0 else neg}'
+
+
+def copy_media(media, pack):
+    """Theme assets live in cities/<slug>/media/ (the source); the pack gets fresh copies.
+    splash.(jpg|png|webp) wins over the Blender-rendered splash-default.jpg; voice-*.mp3 and
+    music/*.mp3 (+ music/music.json) go to pack/audio/."""
+    for old in list(pack.glob('splash.*')):
+        old.unlink()
+    audio = pack / 'audio'
+    if audio.exists():
+        shutil.rmtree(audio)
+    if not media.exists():
+        return
+    splash = next((p for p in (media / 'splash.jpg', media / 'splash.webp', media / 'splash.png', media / 'splash-default.jpg') if p.exists()), None)
+    if splash:
+        shutil.copy2(splash, pack / ('splash' + splash.suffix))
+    voices = sorted(media.glob('voice-*.mp3'))
+    music = media / 'music'
+    tracks = sorted(music.glob('*.mp3')) if music.exists() else []
+    if voices or tracks:
+        audio.mkdir()
+    for v in voices:
+        shutil.copy2(v, audio / v.name)
+    if tracks:
+        meta = json.loads((music / 'music.json').read_text()) if (music / 'music.json').exists() else {'tracks': []}
+        known = {t['file']: t for t in meta.get('tracks', [])}
+        listed = [{**known.get(t.name, {}), 'file': t.name, 'title': known.get(t.name, {}).get('title') or t.stem.replace('-', ' ').title()} for t in tracks]
+        for t in tracks:
+            shutil.copy2(t, audio / t.name)
+        write_json(audio / 'music.json', {'tracks': listed})
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog='wasteland.py pack')
+    ap.add_argument('slug')
+    args = ap.parse_args(argv)
+    folder = city_dir(args.slug)
+    place = load_place(args.slug)
+    city = json.loads((folder / 'city.json').read_text())
+    theme = json.loads((folder / 'theme.json').read_text()) if (folder / 'theme.json').exists() else {}
+    pack = folder / 'pack'
+    pack.mkdir(exist_ok=True)
+    half = city['half']
+
+    # ---------------------------------------------------------------- map.json
+    def ring(r):
+        return [tz(p) for p in r]
+    areas = [{'k': 'land', 'p': [ring(l['outer'])] + [ring(h) for h in l['holes']]} for l in city['land']]
+    for k, kind in (('park', 'green'), ('grass', 'green'), ('cemetery', 'green'), ('forest', 'green'), ('pitch', 'green'),
+                    ('asphalt', 'road'), ('cobble', 'road'), ('parking', 'road'), ('paving', 'path'), ('path', 'path')):
+        for a in city['areas'].get(k, []):
+            areas.append({'k': kind, 'p': [ring(a['outer'])] + [ring(h) for h in a['holes']]})
+    # Clip streets to the play area so the AI never routes beyond the container wall.
+    inner = box(-half + 4, -half + 4, half - 4, half - 4)
+    roads = []
+    for r in city['roads']:
+        g = LineString(r['p']).intersection(inner)
+        for part in (g.geoms if hasattr(g, 'geoms') else [g]):
+            if part.geom_type == 'LineString' and part.length > 1:
+                roads.append({'id': r['id'], 'name': r['name'], 'kind': r['kind'], 'w': r['w'], 'p': [tz(p) for p in part.coords]})
+    game_map = {'roads': roads, 'buildings': [ring(f) for f in city['footprints'] if len(f) >= 3], 'land': [], 'areas': areas,
+                'attribution': place['attribution'], 'bounds': [-half, -half, half, half]}
+    write_json(pack / 'map.json', game_map, compact=True)
+
+    # ---------------------------------------------------------------- spawn: a wide named street near the centre
+    foot = [Polygon(f) for f in city['footprints'] if len(f) >= 3]
+    ftree = STRtree(foot) if foot else None
+    land = [Polygon(l['outer'], l['holes']) for l in city['land']]
+
+    def clear(pt, r):
+        if ftree is not None and any(foot[i].distance(pt) < r for i in ftree.query(pt.buffer(r))):
+            return False
+        return any(l.contains(pt) for l in land)
+
+    best = None
+    for r in city['roads']:
+        if r['kind'] not in DRIVABLE or r['w'] < 5 or len(r['p']) < 2:
+            continue
+        ln = LineString(r['p'])
+        d = ln.project(Point(0, 0))
+        for off in (0, 15, -15, 30, -30, 60, -60):
+            dd = min(max(d + off, 3), ln.length - 3)
+            if dd <= 0:
+                continue
+            pt = ln.interpolate(dd)
+            dist = pt.distance(Point(0, 0))
+            score = dist - (40 if r['name'] else 0) - (30 if r['kind'] in MAIN else 0) - r['w'] * 2
+            if (best is None or score < best[0]) and clear(pt, r['w'] / 2 + 0.5):
+                a, b = ln.interpolate(max(0, dd - 2)), ln.interpolate(min(ln.length, dd + 2))
+                best = (score, pt, b.x - a.x, b.y - a.y, r)
+    if best:
+        _, pt, dx, dy, road = best
+        spawn = {'x': round(pt.x, 2), 'z': round(-pt.y, 2), 'heading': round(math.atan2(-dx, dy), 4), 'street': road['name']}
+    else:
+        spawn = {'x': 0.0, 'z': 0.0, 'heading': 0.0, 'street': ''}
+    sx, sy = spawn['x'], -spawn['z']
+
+    # ---------------------------------------------------------------- labels, districts, squares, supplies, fires
+    labels, seen = [], []
+    for p in sorted(city.get('places', []), key=lambda p: {'suburb': 0, 'quarter': 1, 'neighbourhood': 2, 'water': 3}.get(p['kind'], 4)):
+        if any(math.dist((p['x'], p['y']), s) < 90 for s in seen) or p['name'].upper() in [l[0] for l in labels]:
+            continue
+        labels.append([p['name'].upper(), *tz((p['x'], p['y']))])
+        seen.append((p['x'], p['y']))
+    for lm in city.get('landmarks', []):
+        if len(labels) >= 12:
+            break
+        if lm['kind'] in ('square', 'park', 'church', 'cathedral', 'castle', 'train_station', 'townhall', 'fort', 'city_wall', 'museum', 'ruins'):
+            if any(math.dist((lm['x'], lm['y']), s) < 90 for s in seen) or lm['name'].upper() in [l[0] for l in labels]:
+                continue
+            labels.append([lm['name'].upper(), *tz((lm['x'], lm['y']))])
+            seen.append((lm['x'], lm['y']))
+    districts = [{'name': p['name'].upper(), 'x': tz((p['x'], p['y']))[0], 'z': tz((p['x'], p['y']))[1]}
+                 for p in city.get('places', []) if p['kind'] in ('suburb', 'quarter', 'neighbourhood', 'locality', 'island', 'islet', 'village', 'hamlet')]
+    squares = [{'name': lm['name'].upper(), 'x': tz((lm['x'], lm['y']))[0], 'z': tz((lm['x'], lm['y']))[1], 'r': round(max(12, min(60, math.sqrt(lm.get('area', 600) / math.pi))), 1)}
+               for lm in city.get('landmarks', []) if lm['kind'] == 'square']
+    crates, picked = [], [(sx, sy)]
+    for lm in sorted(city.get('landmarks', []), key=lambda l: -l.get('area', 0)):
+        p = (lm['x'], lm['y'])
+        if all(math.dist(p, q) > 110 for q in picked) and abs(p[0]) < half - 20 and abs(p[1]) < half - 20:
+            crates.append(tz(p))
+            picked.append(p)
+        if len(crates) >= 5:
+            break
+    for ang in (0.6, 2.2, 3.8, 5.2, 1.4):  # fill up with points around the spawn
+        if len(crates) >= 5:
+            break
+        crates.append(tz((sx + math.cos(ang) * 160, sy + math.sin(ang) * 160)))
+    fires = [tz((sx + math.cos(a) * d, sy + math.sin(a) * d)) for a, d in ((0.9, 45), (2.8, 80), (4.6, 110))]
+
+    # ---------------------------------------------------------------- texts and media
+    copy_media(folder / 'media', pack)
+    name = theme.get('name') or place['name']
+    fill = lambda s: s.replace('{Name}', name).replace('{NAME}', name.upper())
+    text = {k: fill(theme.get('text', {}).get(k, v)) for k, v in DEFAULT_TEXT.items()}
+    country = place['display_name'].split(',')[-1].strip().upper() if place.get('display_name') else ''
+    lat, lon = place['center']
+    splash = next((f'city/{p.name}' for p in (pack / 'splash.jpg', pack / 'splash.webp', pack / 'splash.png') if p.exists()), None)
+    audio = pack / 'audio'
+    voices = sorted(p.stem[6:] for p in audio.glob('voice-*.mp3')) if audio.exists() else []
+    config = {
+        'version': 1, 'slug': args.slug, 'name': name,
+        'title': {'top': theme.get('title_top', name.upper()), 'bottom': theme.get('title_bottom', 'WASTELAND')},
+        'page_title': theme.get('page_title', f'{name} Wasteland · Battlecars'),
+        'wordmark': theme.get('wordmark', f'{name[:1].upper()} / W'),
+        'coordinates': f'{name.upper()}{", " + country if country and country != name.upper() else ""} <i></i> {dms(lat, "N", "S")} / {dms(lon, "E", "W")}',
+        'text': text, 'room': theme.get('room', args.slug.upper().replace('-', '')[:16]),
+        'spawn': spawn, 'bounds': {'minX': -half - 30, 'maxX': half + 30, 'minZ': -half - 30, 'maxZ': half + 30},
+        'labels': labels[:12], 'districts': districts, 'squares': squares, 'crates': crates, 'fires': fires,
+        'splash': splash, 'voices': voices, 'music': 'city/audio/music.json' if (audio / 'music.json').exists() else None,
+        'attribution': place['attribution'], 'center': place['center'],
+    }
+    write_json(pack / 'config.json', config)
+    say(f'Pack: map.json ({len(roads)} roads, {len(game_map["buildings"])} footprints), config.json '
+        f'(spawn on {spawn["street"] or "a street"}, {len(labels)} labels, {len(crates)} supply points, splash: {"yes" if splash else "no"}, voices: {len(voices)})')
+    step_done(args.slug, 'pack', spawn=spawn)
+
+
+if __name__ == '__main__':
+    main()

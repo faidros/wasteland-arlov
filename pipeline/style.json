@@ -1,0 +1,73 @@
+{
+  "_comment": "Shared look of generated cities. Colours are sRGB 0-1. Each wall style has one neutral texture set (upper floors, ground floor, blank) that is tinted per colour. Edit freely: prepare_city.py picks styles/colours, blender/build_city.py turns them into materials.",
+  "storey_m": 3.0,
+  "ground_storey_m": 3.8,
+  "wall_styles": {
+    "plaster": {"bay": 3.2, "colours": {
+      "ivory": [0.90, 0.86, 0.74], "ochre": [0.84, 0.66, 0.40], "yellow": [0.93, 0.83, 0.54], "salmon": [0.87, 0.63, 0.52],
+      "rose": [0.82, 0.62, 0.60], "white": [0.93, 0.92, 0.89], "grey": [0.71, 0.71, 0.69], "green": [0.71, 0.79, 0.67],
+      "blue": [0.64, 0.72, 0.80], "terracotta": [0.74, 0.44, 0.32]}},
+    "brick": {"bay": 3.2, "colours": {
+      "red": [0.64, 0.33, 0.25], "brown": [0.48, 0.31, 0.25], "yellow": [0.82, 0.70, 0.50], "dark": [0.36, 0.28, 0.25]}},
+    "wood": {"bay": 3.6, "colours": {
+      "falu": [0.56, 0.18, 0.14], "yellow": [0.91, 0.79, 0.47], "white": [0.93, 0.93, 0.90], "grey": [0.63, 0.67, 0.69],
+      "green": [0.47, 0.57, 0.46], "blue": [0.50, 0.60, 0.72]}},
+    "stone": {"bay": 3.4, "colours": {
+      "limestone": [0.80, 0.76, 0.66], "grey": [0.60, 0.60, 0.58], "sandstone": [0.78, 0.64, 0.48]}},
+    "concrete": {"bay": 3.0, "colours": {"light": [0.76, 0.75, 0.72], "dark": [0.54, 0.54, 0.52]}},
+    "glass": {"bay": 1.8, "colours": {"blue": [0.58, 0.68, 0.76], "dark": [0.38, 0.41, 0.45]}},
+    "metal": {"bay": 4.0, "colours": {
+      "grey": [0.62, 0.64, 0.65], "blue": [0.38, 0.47, 0.58], "red": [0.60, 0.27, 0.22], "green": [0.42, 0.52, 0.44]}}
+  },
+  "roof_styles": {
+    "tiles": {"colours": {"red": [0.62, 0.30, 0.22], "brown": [0.42, 0.27, 0.21], "dark": [0.24, 0.22, 0.22]}},
+    "metal": {"colours": {"grey": [0.45, 0.47, 0.48], "red": [0.52, 0.20, 0.16], "black": [0.16, 0.17, 0.18], "copper": [0.33, 0.55, 0.47]}},
+    "slate": {"colours": {"dark": [0.26, 0.27, 0.30]}},
+    "flat": {"colours": {"tar": [0.22, 0.22, 0.23], "gravel": [0.48, 0.46, 0.43]}}
+  },
+  "named_colours": {
+    "white": [0.93, 0.92, 0.89], "black": [0.15, 0.15, 0.15], "grey": [0.6, 0.6, 0.6], "gray": [0.6, 0.6, 0.6],
+    "silver": [0.72, 0.72, 0.72], "red": [0.62, 0.22, 0.18], "darkred": [0.45, 0.15, 0.12], "maroon": [0.42, 0.14, 0.12],
+    "brown": [0.45, 0.30, 0.22], "orange": [0.85, 0.55, 0.30], "yellow": [0.92, 0.82, 0.50], "beige": [0.88, 0.82, 0.68],
+    "cream": [0.93, 0.89, 0.76], "ivory": [0.92, 0.89, 0.80], "tan": [0.80, 0.68, 0.52], "green": [0.45, 0.58, 0.42],
+    "darkgreen": [0.25, 0.36, 0.26], "olive": [0.50, 0.50, 0.30], "blue": [0.48, 0.58, 0.72], "lightblue": [0.68, 0.78, 0.86],
+    "navy": [0.20, 0.25, 0.40], "pink": [0.88, 0.66, 0.66], "salmon": [0.88, 0.62, 0.52], "terracotta": [0.74, 0.44, 0.32],
+    "lightgrey": [0.78, 0.78, 0.76], "lightgray": [0.78, 0.78, 0.76], "darkgrey": [0.38, 0.38, 0.38], "darkgray": [0.38, 0.38, 0.38]
+  },
+  "region_presets": {
+    "nordic": {"countries": ["se", "no", "fi", "dk", "is", "ax"],
+      "house": {"wood": 0.55, "plaster": 0.35, "brick": 0.10}, "block": {"plaster": 0.6, "brick": 0.4},
+      "wood_colours": {"falu": 0.45, "yellow": 0.2, "white": 0.2, "grey": 0.1, "green": 0.05},
+      "roof": {"tiles": 0.55, "metal": 0.35, "slate": 0.10}},
+    "brick_north": {"countries": ["gb", "ie", "nl", "be", "de", "pl", "ee", "lv", "lt"],
+      "house": {"brick": 0.6, "plaster": 0.35, "wood": 0.05}, "block": {"brick": 0.55, "plaster": 0.35, "concrete": 0.10},
+      "roof": {"tiles": 0.6, "slate": 0.3, "metal": 0.1}},
+    "mediterranean": {"countries": ["es", "pt", "it", "gr", "hr", "mt", "cy", "fr", "mc", "sm"],
+      "house": {"plaster": 0.8, "stone": 0.15, "brick": 0.05}, "block": {"plaster": 0.75, "stone": 0.15, "concrete": 0.10},
+      "roof": {"tiles": 0.85, "slate": 0.1, "metal": 0.05}},
+    "default": {"countries": [],
+      "house": {"plaster": 0.5, "brick": 0.3, "wood": 0.2}, "block": {"plaster": 0.5, "brick": 0.3, "concrete": 0.2},
+      "roof": {"tiles": 0.55, "metal": 0.3, "slate": 0.15}}
+  },
+  "surfaces": {
+    "_comment": "Ground layers, top priority first. z is the surface height in metres.",
+    "asphalt": {"z": 0.02, "colour": [0.25, 0.25, 0.26]},
+    "cobble": {"z": 0.02, "colour": [0.52, 0.50, 0.46]},
+    "paving": {"z": 0.03, "colour": [0.62, 0.60, 0.56]},
+    "sidewalk": {"z": 0.14, "colour": [0.60, 0.59, 0.56]},
+    "parking": {"z": 0.015, "colour": [0.33, 0.33, 0.34]},
+    "rail": {"z": 0.05, "colour": [0.42, 0.40, 0.37]},
+    "path": {"z": 0.012, "colour": [0.64, 0.58, 0.48]},
+    "pier": {"z": 0.25, "colour": [0.46, 0.40, 0.33]},
+    "sand": {"z": 0.0, "colour": [0.82, 0.74, 0.58]},
+    "pitch": {"z": 0.008, "colour": [0.36, 0.50, 0.28]},
+    "park": {"z": 0.006, "colour": [0.36, 0.48, 0.25]},
+    "grass": {"z": 0.006, "colour": [0.40, 0.50, 0.28]},
+    "cemetery": {"z": 0.006, "colour": [0.34, 0.45, 0.25]},
+    "forest": {"z": 0.004, "colour": [0.25, 0.32, 0.18]},
+    "field": {"z": 0.004, "colour": [0.55, 0.52, 0.34]},
+    "dirt": {"z": 0.002, "colour": [0.50, 0.42, 0.32]},
+    "ground": {"z": 0.0, "colour": [0.46, 0.43, 0.37]}
+  },
+  "water_z": -1.2
+}
