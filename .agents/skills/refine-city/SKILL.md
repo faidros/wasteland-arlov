@@ -1,6 +1,6 @@
 ---
 name: refine-city
-description: Improvement rounds for a generated city — correct individual houses, a whole street or an area (heights, storeys, roof shapes, colours, materials, shopfronts, road surfaces) from Google Street View, satellite views and the user's own photos, or hand-model landmarks in Blender. Use when the user says a building/street looks wrong, asks to "förbättra/förfina Storgatan", "make the cathedral look right", "run a refinement pass", or wants more realism in a built city.
+description: Improvement rounds for a generated city — correct individual houses, a whole street, a district or the whole town (heights, storeys, roof shapes, colours, materials, shopfronts, road surfaces) from Google Street View survey rounds, satellite views, photos found online and the user's own photos, and hand-model landmarks in Blender. Use when the user says a building/street looks wrong, asks to "förbättra/förfina Storgatan", "make the cathedral look right", "run a refinement pass", or wants more realism in a built city.
 ---
 
 # Refine a city from Street View
@@ -13,7 +13,61 @@ pass. Three levels, cheapest first:
 2. **Area rules** — one setting for every building inside a polygon or radius.
 3. **Custom models** — a Blender script per landmark in `cities/<slug>/custom/<building id>.py`.
 
-## A round, step by step
+## Two kinds of work
+
+- **Known buildings and places** (church, station, town hall, a landmark the user names): find photos
+  online and model them by hand as custom scripts. See *Landmarks from photos* below.
+- **The many ordinary houses**: Street View survey rounds with `wasteland.py survey`, facts into
+  overrides.json, housekit starter scripts with `wasteland.py seed`, then hand edits. See *Survey
+  rounds* below.
+
+## Survey rounds (many houses at once)
+
+```sh
+python3 wasteland.py survey <slug> plan --out /tmp/<slug>-sv     # or --street "Storgatan" / --near "Torget"
+# open each printed Street View link, screenshot it, save as /tmp/<slug>-sv/<index>.jpg
+python3 wasteland.py survey <slug> compare /tmp/<slug>-sv         # sheets/*.jpg: frame above model, ids labelled
+```
+- `plan` covers every house that has no observation yet: no overrides entry, or a script still marked
+  "not surveyed yet". Viewpoints are chosen so each sees as many such houses as possible, nearest the
+  centre first.
+- Keep the frames outside the repository; Street View imagery is a reference only.
+- `compare` renders the model from the same eye (2.5 m over the terrain, 90°, pitch 8°) with an ID pass.
+  On each sheet the plan's targets are yellow, and `labels.json` maps the short labels to ids.
+- Write one overrides entry per house you can see clearly. Use `style`, `colour`, `roof`,
+  `roof_style`/`roof_colour` and `building:levels`, plus a `note` in plain words: "falu red two-storey
+  timber house, white external stair to an upper gallery, red tile roof, chimney". The seeder reads
+  the note: balconies, galleries, porches, verandas, dormers, cross gables, garages, signs and more.
+- When most houses in a district share a look, also set its area mixes.
+- Then:
+  ```sh
+  python3 wasteland.py seed <slug> --ids w1,w2,… --force   # housekit starter scripts from the notes
+  python3 wasteland.py rebuild <slug>
+  python3 wasteland.py survey <slug> compare /tmp/<slug>-sv   # again: compare after the change
+  ```
+- Hand-edit the scripts where the photo shows more than the note says (signs, shop names, two-tone
+  walls, stair towers). Replace the "Starter script…" docstring line when you do, so later seeding
+  keeps your edit.
+- Repeat rounds (the next `plan` skips what is done) until the user is happy or says stop.
+
+## Landmarks from photos
+
+Ask the user whether to search for pictures online. Where to look:
+- Wikimedia Commons (`https://commons.wikimedia.org/w/index.php?search=<landmark>`).
+- For Swedish places: DigitaltMuseum, Kringla, the municipality, and the church or railway history
+  pages.
+- The user's own photos in `cities/<slug>/references/`.
+
+How to use them:
+- Keep openly licensed pictures in `cities/<slug>/references/<landmark>/`, with author, licence and
+  URL in `references/SOURCES.md`.
+- Pictures that may only be looked at (no open licence) are used to measure from and are not stored.
+- Collect facts in `references/<landmark>/NOTES.md`: architect, year, materials, number of bays and
+  storeys, tower heights, roof shape.
+- Then write `custom/<id>.py` (see *Custom models for landmarks*).
+- Compare renders from the photo's viewpoints, and adjust over two or three iterations.
+
+## A round, step by step (a street or a single building)
 
 1. **Scope** with the user: one street, a square and its surroundings, or a single landmark. Keep a
    round to ~5–25 buildings.
@@ -118,9 +172,10 @@ h.gallery(wall_index, 4.0, 12.0, stair='left')                       # loftgång
 h.porch(wall_index, x=6.0, roof_mat='M_Roof_Tiles_red')               # gabled entrance porch (facades(skip=…))
 ```
 Starter scripts for many houses at once come from the overrides notes:
-`python3 pipeline/housekit_seed.py <slug> --ids w1,w2 --force` (`--unsurveyed` also seeds every other
-house from its generated look). `--force` only replaces untouched starter scripts. When you edit a
-script by hand, replace the "Starter script…" line in its docstring, and the seeder will keep it.
+`python3 wasteland.py seed <slug> --ids w1,w2 --force` (`--unsurveyed` also seeds every other house from
+its generated look, marked "not surveyed yet"). `--force` only replaces untouched starter scripts. When
+you edit a script by hand, replace the "Starter script…" line in its docstring, and the seeder will
+keep it.
 Street sides are found from the city's roads; pass `street=[wall_index]` when the guess is wrong (a
 building beside a square). Check each house from the street in front of it, compare with the Street
 View frame, adjust, repeat.

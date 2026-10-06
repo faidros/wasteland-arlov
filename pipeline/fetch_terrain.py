@@ -277,6 +277,8 @@ def fetch(place: dict) -> dict:
             auth = lantmateriet_auth()
         except Exception as exc:
             say(f'  ! Lantmäteriet login failed ({exc}); using Copernicus')
+    if place.get('country_code', '').lower() == 'se' and not auth:
+        say('  Tip: a free Geotorget account gives Swedish places a 1 m ground model (see .env.example)')
     step = LM_STEP if auth else 30.0
     n = int(math.ceil(2 * ext / step)) + 1
     xs = -ext + np.arange(n) * step

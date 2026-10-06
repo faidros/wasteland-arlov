@@ -23,7 +23,9 @@ Answer in the user's language.
 · `build <slug> [--from STEP | --only a,b] [--refresh]` with steps `fetch terrain prepare textures blender export tiles pack splash`
 · `rebuild <slug>` · `play <slug> [--open]` (dev server :5220, run in background) · `list` · `status <slug>`
 · `theme <slug>` · `voices <slug>` · `music <slug> --add f.mp3 --title …` · `buildings <slug> --street … | --near … [--json]`
-· `render <slug> [cameras | street:x,y,heading] [--street … | --near …]` · `publish <slug> [--arena wss://…]`
+· `render <slug> [cameras | street:x,y,heading] [--street … | --near …]`
+· `survey <slug> plan [--street … | --near …] --out DIR` then `survey <slug> compare DIR` (Street View vs model, ids labelled)
+· `seed <slug> --ids … [--force] [--unsurveyed]` (housekit starter scripts from overrides notes) · `publish <slug> [--arena wss://…]`
 
 ## Layout
 

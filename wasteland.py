@@ -12,6 +12,8 @@
     python3 wasteland.py music <slug> --add f.mp3  add a (Suno) track to the city's radio
     python3 wasteland.py buildings <slug> --street "Strandgatan"   list houses to refine (Street View links)
     python3 wasteland.py rebuild <slug>            rebuild after overrides.json / custom/*.py changes
+    python3 wasteland.py survey <slug> plan        Street View viewpoints for houses not checked yet (then: compare DIR)
+    python3 wasteland.py seed <slug> --ids …       housekit starter scripts from the overrides notes
     python3 wasteland.py render <slug> [...]       review images from Blender
     python3 wasteland.py publish <slug> [--arena wss://…]   static website in game/dist/
     python3 wasteland.py selftest                  offline pipeline tests + game tests
@@ -442,6 +444,30 @@ def cmd_render(a):
     say(f'Images in {out.relative_to(ROOT)}/')
 
 
+def cmd_survey(a):
+    slug = slug_of(a.slug)
+    if a.action == 'plan':
+        args = [slug, 'plan', '--max', str(a.max)]
+        for k in ('street', 'near', 'out'):
+            if getattr(a, k):
+                args += [f'--{k}', getattr(a, k)]
+        if a.unsurveyed:
+            args.append('--unsurveyed')
+        py('survey.py', *args)
+        return
+    d = Path(a.dir).resolve() if a.dir else CITIES / slug / 'survey'
+    py('survey.py', slug, 'views', d)
+    blender('-b', CITIES / slug / 'city.blend', '--python-exit-code', '1', '--python', PIPE / 'blender/render_survey.py', '--',
+            d / 'views.json', d / 'render')
+    py('survey.py', slug, 'sheets', d)
+
+
+def cmd_seed(a):
+    slug = slug_of(a.slug)
+    args = [slug] + (['--ids', a.ids] if a.ids else []) + (['--force'] if a.force else []) + (['--unsurveyed'] if a.unsurveyed else [])
+    py('housekit_seed.py', *args)
+
+
 def cmd_publish(a):
     slug = slug_of(a.slug)
     link_city(slug)
@@ -533,6 +559,22 @@ def main():
     p.add_argument('--street')
     p.add_argument('--near')
     p.set_defaults(fn=cmd_render)
+    p = sub.add_parser('survey', help='Street View rounds: plan viewpoints, then compare frames with the model')
+    p.add_argument('slug', nargs='?')
+    p.add_argument('action', choices=['plan', 'compare'])
+    p.add_argument('dir', nargs='?', help='compare: the folder with plan.json and the frames (default cities/<slug>/survey)')
+    p.add_argument('--street')
+    p.add_argument('--near', help='"lat,lon" or a landmark name')
+    p.add_argument('--unsurveyed', action='store_true')
+    p.add_argument('--max', type=int, default=40)
+    p.add_argument('--out', help='plan: where plan.json goes (keep Street View frames outside the repository)')
+    p.set_defaults(fn=cmd_survey)
+    p = sub.add_parser('seed', help='housekit starter scripts (custom/<id>.py) from overrides.json notes')
+    p.add_argument('slug', nargs='?')
+    p.add_argument('--ids', help='comma separated building ids')
+    p.add_argument('--force', action='store_true', help='replace untouched starter scripts (hand-edited ones are kept)')
+    p.add_argument('--unsurveyed', action='store_true', help='also every other house, from its generated look')
+    p.set_defaults(fn=cmd_seed)
     p = sub.add_parser('publish', help='build the static website (game/dist/)')
     p.add_argument('slug', nargs='?')
     p.add_argument('--arena', help='wss:// URL of your arena relay')
