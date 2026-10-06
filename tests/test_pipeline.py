@@ -8,6 +8,7 @@ make_pack.py; the results are checked for sea/land, buildings, roofs, sidewalks,
 spawn point and the game map.
 """
 import json
+import math
 import shutil
 import sys
 import unittest
@@ -129,6 +130,39 @@ class PipelineTest(unittest.TestCase):
                 self.assertLessEqual(abs(x), half)
                 self.assertLessEqual(abs(z), half)
         self.assertTrue(any(a['k'] == 'land' for a in self.map['areas']))
+
+    def test_requested_spawn_snaps_to_named_street(self):
+        folder = CITIES / SLUG
+        theme_path = folder / 'theme.json'
+        target_lat, target_lon = P.latlon(-120, 20)
+        requested = {'lat': target_lat, 'lon': target_lon, 'street': 'Testgatan'}
+        try:
+            theme_path.write_text(json.dumps({'name': 'Testby', 'spawn': requested}))
+            make_pack.main([SLUG])
+            forward = json.loads((folder / 'pack/config.json').read_text())['spawn']
+            theme_path.write_text(json.dumps({'name': 'Testby', 'spawn': {**requested, 'reverse': True}}))
+            make_pack.main([SLUG])
+            reverse = json.loads((folder / 'pack/config.json').read_text())['spawn']
+        finally:
+            theme_path.unlink(missing_ok=True)
+        self.assertEqual(forward['street'], 'Testgatan')
+        self.assertAlmostEqual(forward['x'], -120, delta=1)
+        self.assertAlmostEqual(forward['z'], 0, delta=1)
+        self.assertEqual(reverse['street'], forward['street'])
+        self.assertAlmostEqual(reverse['x'], forward['x'])
+        self.assertAlmostEqual(reverse['z'], forward['z'])
+        self.assertAlmostEqual(abs(reverse['heading'] - forward['heading']), math.pi, places=3)
+
+    def test_vehicle_insignia_is_preserved_from_theme(self):
+        folder = CITIES / SLUG
+        theme_path = folder / 'theme.json'
+        theme_path.write_text(json.dumps({'name': 'Testby', 'vehicle_insignia': 'kal p dal'}))
+        try:
+            make_pack.main([SLUG])
+            config = json.loads((folder / 'pack/config.json').read_text())
+        finally:
+            theme_path.unlink(missing_ok=True)
+        self.assertEqual(config['vehicle_insignia'], 'kal p dal')
 
     def test_terrain(self):
         t = self.city['terrain']

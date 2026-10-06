@@ -1,0 +1,68 @@
+{
+  "buildings": {
+    "w208689940": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "note": "1½-storey white-painted brick villa, steep dark tiled gabled roof, one broad street-facing dormer, dark foundation plinth"
+    },
+    "w208689956": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "note": "1½-storey red brick villa, steep dark tiled gabled roof, one small central dormer, chimney"
+    },
+    "w208689951": {
+      "style": "plaster",
+      "colour": "yellow",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "note": "1½-storey yellow plaster villa, steep red tiled gabled roof, broad central dormer, small entrance porch"
+    },
+    "w208688034": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "note": "1½-storey red brick villa, steep dark tiled gabled roof, decorative light brick bands on the front gable"
+    },
+    "w170849544": {
+      "style": "metal",
+      "colour": "grey",
+      "roof": "flat",
+      "building:levels": 1,
+      "height": 5.2,
+      "shopfront": true,
+      "note": "single-storey modern supermarket, grey metal cladding, full-height glass storefront, red X-TRA fascia sign"
+    },
+    "w89610390": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "shopfront": true,
+      "note": "modern public library, red brick, glazed entrance floor, long dark metal balconies on the street facade"
+    }
+  },
+  "roads": {
+    "Dalbyvägen": {
+      "surface": "asphalt",
+      "sidewalk": "both"
+    },
+    "Lundavägen": {
+      "surface": "asphalt",
+      "sidewalk": "both"
+    }
+  }
+}

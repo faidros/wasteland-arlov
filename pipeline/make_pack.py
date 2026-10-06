@@ -151,27 +151,56 @@ def main(argv=None):
             return False
         return any(l.contains(pt) for l in land)
 
-    best = None
-    for r in city['roads']:
-        if r['kind'] not in DRIVABLE or r['w'] < 5 or len(r['p']) < 2:
-            continue
-        ln = LineString(r['p'])
-        d = ln.project(Point(0, 0))
-        for off in (0, 15, -15, 30, -30, 60, -60):
-            dd = min(max(d + off, 3), ln.length - 3)
-            if dd <= 0:
+    requested = theme.get('spawn')
+    if requested:
+        target_xy = projection_for(place).xy(float(requested['lat']), float(requested['lon']))
+        target = Point(target_xy)
+        candidates = []
+        for r in city['roads']:
+            if r['kind'] not in DRIVABLE or r['w'] < 5 or len(r['p']) < 2:
                 continue
-            pt = ln.interpolate(dd)
-            dist = pt.distance(Point(0, 0))
-            score = dist - (40 if r['name'] else 0) - (30 if r['kind'] in MAIN else 0) - r['w'] * 2
-            if (best is None or score < best[0]) and clear(pt, r['w'] / 2 + 0.5):
-                a, b = ln.interpolate(max(0, dd - 2)), ln.interpolate(min(ln.length, dd + 2))
-                best = (score, pt, b.x - a.x, b.y - a.y, r)
-    if best:
-        _, pt, dx, dy, road = best
-        spawn = {'x': round(pt.x, 2), 'z': round(-pt.y, 2), 'heading': round(math.atan2(-dx, dy), 4), 'street': road['name']}
+            if requested.get('street') and r['name'].casefold() != requested['street'].casefold():
+                continue
+            ln = LineString(r['p'])
+            if ln.length <= 6:
+                continue
+            projected = ln.project(target)
+            for offset in (0, -4, 4, -8, 8, -16, 16, -30, 30):
+                dd = min(max(projected + offset, 3), ln.length - 3)
+                pt = ln.interpolate(dd)
+                if clear(pt, r['w'] / 2 + 0.5):
+                    a, b = ln.interpolate(max(0, dd - 2)), ln.interpolate(min(ln.length, dd + 2))
+                    candidates.append((pt.distance(target), pt, b.x - a.x, b.y - a.y, r))
+        if not candidates:
+            street = requested.get('street') or 'a drivable street'
+            raise SystemExit(f'Could not place requested spawn on {street}. Check cities/{args.slug}/theme.json.')
+        _, pt, dx, dy, road = min(candidates, key=lambda c: c[0])
+        heading = math.atan2(-dx, dy)
+        if requested.get('reverse'):
+            heading = math.atan2(-math.sin(heading), -math.cos(heading))
+        spawn = {'x': round(pt.x, 2), 'z': round(-pt.y, 2), 'heading': round(heading, 4), 'street': road['name']}
     else:
-        spawn = {'x': 0.0, 'z': 0.0, 'heading': 0.0, 'street': ''}
+        best = None
+        for r in city['roads']:
+            if r['kind'] not in DRIVABLE or r['w'] < 5 or len(r['p']) < 2:
+                continue
+            ln = LineString(r['p'])
+            d = ln.project(Point(0, 0))
+            for off in (0, 15, -15, 30, -30, 60, -60):
+                dd = min(max(d + off, 3), ln.length - 3)
+                if dd <= 0:
+                    continue
+                pt = ln.interpolate(dd)
+                dist = pt.distance(Point(0, 0))
+                score = dist - (40 if r['name'] else 0) - (30 if r['kind'] in MAIN else 0) - r['w'] * 2
+                if (best is None or score < best[0]) and clear(pt, r['w'] / 2 + 0.5):
+                    a, b = ln.interpolate(max(0, dd - 2)), ln.interpolate(min(ln.length, dd + 2))
+                    best = (score, pt, b.x - a.x, b.y - a.y, r)
+        if best:
+            _, pt, dx, dy, road = best
+            spawn = {'x': round(pt.x, 2), 'z': round(-pt.y, 2), 'heading': round(math.atan2(-dx, dy), 4), 'street': road['name']}
+        else:
+            spawn = {'x': 0.0, 'z': 0.0, 'heading': 0.0, 'street': ''}
     sx, sy = spawn['x'], -spawn['z']
 
     # ---------------------------------------------------------------- labels, districts, squares, supplies, fires
@@ -232,7 +261,7 @@ def main(argv=None):
     audio = pack / 'audio'
     voices = sorted(p.stem[6:] for p in audio.glob('voice-*.mp3')) if audio.exists() else []
     config = {
-        'version': 1, 'slug': args.slug, 'name': name,
+        'version': 1, 'slug': args.slug, 'name': name, 'vehicle_insignia': theme.get('vehicle_insignia'),
         'title': {'top': theme.get('title_top', name.upper()), 'bottom': theme.get('title_bottom', 'WASTELAND')},
         'page_title': theme.get('page_title', f'{name} Wasteland · Battlecars'),
         'wordmark': theme.get('wordmark', f'{name[:1].upper()} / W'),

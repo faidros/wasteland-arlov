@@ -42,6 +42,14 @@ test('Each driver seat sits inside its cabin with a clear view through the winds
   }
 });
 
+test('Original Kalmar insignia stays separate so the installed-city decal can replace it',()=>{
+  for(const id of Object.keys(CABINS)){
+    const marks=[];vehicles.templates[id].traverse(o=>{if(o.isMesh&&/insignia/i.test(o.name))marks.push(o);});
+    assert(marks.some(o=>/KALMAR/i.test(o.name)&&!o.visible),`${id}: original lettering hidden`);
+    assert(marks.some(o=>o.name==='Insignia city'),`${id}: replacement city decal present`);
+  }
+});
+
 test('Climbing in cuts only the player car, shows the interior and turns the wheel with the steering',()=>{
   for(const id of Object.keys(CABINS)){
     const player=vehicles.create(id,true),rival=vehicles.create(id);

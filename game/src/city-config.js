@@ -1,7 +1,7 @@
 // The installed city pack (public/city/, written by wasteland-builder): names, texts, spawn, labels and media.
 // Everything place-specific in the game reads from CITY so the same engine runs any generated town.
 export const CITY={
-  name:'City',slug:'city',title:{top:'CITY',bottom:'WASTELAND'},page_title:'Wasteland · Battlecars',wordmark:'W / W',coordinates:'',
+  name:'City',slug:'city',vehicle_insignia:null,title:{top:'CITY',bottom:'WASTELAND'},page_title:'Wasteland · Battlecars',wordmark:'W / W',coordinates:'',
   text:{eyebrow:'THE STREETS ARE YOURS. KEEP THEM.',tagline:'Same streets. New rules.',intro:'Take an armored machine into the streets.<br>Hunt the raiders. Scavenge the wrecks. Make it home.',
     win_eyebrow:'THE CITY IS YOURS',start_roam:'DRIVE THE CITY',explore:'EXPLORE THE CITY',loading:'Loading the city…',ready:'The city is ready',map_title:'TACTICAL MAP',description:''},
   room:'WASTELAND',spawn:{x:0,z:0,heading:0},bounds:{minX:-600,maxX:600,minZ:-600,maxZ:600},

@@ -14,7 +14,7 @@ function optimize(root){
   const wheelMeshes=new Set();for(const w of wheels)w.traverse(o=>{if(o.isMesh)wheelMeshes.add(o);});
   const batches=new Map();
   root.traverse(o=>{
-    if(!o.isMesh||wheelMeshes.has(o)||Array.isArray(o.material))return;
+    if(!o.isMesh||wheelMeshes.has(o)||Array.isArray(o.material)||/insignia/i.test(o.name))return;
     const material=o.material;
     if(!batches.has(material))batches.set(material,[]);
     const g=o.geometry.clone().applyMatrix4(o.matrixWorld);
@@ -154,7 +154,7 @@ function cityInsignia(root){
   root.traverse(o=>{if(/insignia/i.test(o.name)&&o.isMesh){found.push(o);o.geometry.computeBoundingBox();box.union(o.geometry.boundingBox.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse,o.matrixWorld)));}});
   if(!found.length)return;
   for(const o of found)o.visible=false;
-  const text=(CITY.name||'').toUpperCase();if(!text||typeof document==='undefined')return;
+  const text=CITY.vehicle_insignia==null?(CITY.name||'').toUpperCase():String(CITY.vehicle_insignia);if(!text||typeof document==='undefined')return;
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=192;const ctx=canvas.getContext('2d');
   let size=150;ctx.font=`900 ${size}px Impact, 'Arial Black', sans-serif`;
   while(ctx.measureText(text).width>980&&size>40){size-=6;ctx.font=`900 ${size}px Impact, 'Arial Black', sans-serif`;}

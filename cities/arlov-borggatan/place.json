@@ -1,0 +1,23 @@
+{
+  "name": "Arlöv",
+  "query": "Arlöv, Skåne, Sweden",
+  "display_name": "Arlöv, Malmö, Burlövs kommun, Skåne län, 232 34, Sverige",
+  "country_code": "se",
+  "region": "Skåne län",
+  "center": [
+    55.6341722,
+    13.0763813
+  ],
+  "size_m": 1200,
+  "bbox": [
+    55.628782,
+    13.066833,
+    55.639562,
+    13.08593
+  ],
+  "osm": {
+    "type": "node",
+    "id": 55079611
+  },
+  "attribution": "Map data © OpenStreetMap contributors (ODbL)"
+}

@@ -1,0 +1,71 @@
+{
+  "_help": "Edit freely, then run: python3 wasteland.py theme <slug>  (texts) · voices <slug>  (ElevenLabs) · build <slug> --only pack",
+  "name": "Arlöv",
+  "language": "sv",
+  "vehicle_insignia": "kal p dal",
+  "title_top": "ARLÖV",
+  "title_bottom": "WASTELAND",
+  "page_title": "Arlöv Wasteland · Stridsbilar",
+  "room": "ARLÖV",
+  "_map_labels_help": "Extra tactical-map labels, shown first: a landmark/place name from facts, or {\"name\": …, \"lat\": …, \"lon\": …}.",
+  "map_labels": [],
+  "spawn": {
+    "lat": 55.6305432,
+    "lon": 13.0750124,
+    "street": "Borggatan",
+    "reverse": true
+  },
+  "text": {
+    "eyebrow": "GATORNA ÄR ERA. TA ER HEM IGEN.",
+    "tagline": "Samma gator. Nya regler.",
+    "intro": "Ta en bepansrad kärra ut på Arlövs gator.<br>Håll undan röjarna, samla skrot och ta dig hem.",
+    "win_eyebrow": "ARLÖV ÄR ERT",
+    "start_roam": "KÖR I ARLÖV",
+    "explore": "UTFORSKA ARLÖV",
+    "loading": "Laddar Arlöv…",
+    "ready": "Arlöv är redo",
+    "map_title": "ARLÖV / STRIDSKARTA",
+    "description": "Pansrade bilar. Arlövs riktiga gator. Strid genom ett öppet 3D-landskap."
+  },
+  "voice": {
+    "voice_id": "JBFqnCBsd6RMkjVDRZzb",
+    "model": "eleven_v3",
+    "_lines_help": "Ljudtaggar som [gravelly] [pause] [urgent] styr framförandet. intro och win ska nämna orten; övriga repliker är valfria.",
+    "lines": {
+      "intro": "[gravelly] Förr tillhörde Arlövs gator alla. [pause] Nu tillhör de den som tar sig hem. Håll farten uppe, vakta pansaret och samla skrot.",
+      "win": "[excited] Du klarade det. Sista röjaren brinner och Arlöv är ert för en natt till. Kör hem maskinen.",
+      "wave": "[urgent] Motorer hörs vid Borggatan. Röjarna närmar sig. Håll pipan varm och flyktvägen fri."
+    }
+  },
+  "splash_prompt": "Cinematic post-apocalyptic game key art. An armored muscle car with a steel ram plow, riveted graphite armor, exposed V8 supercharger and roof-mounted twin machine guns on Borggatan in Arlöv, Sweden, at golden dusk, with Arlövs kyrka recognisable in the hazy background and the town's real architecture around it. Dust, rust and oil, warm orange sunlight, charcoal shadows, desaturated amber. Front three-quarter street-level view; car on the right third, dark calm negative space on the left for the HTML title. Wide 16:9 landscape. No people, no text, no logos, no watermark. Realistic game key art.",
+  "music": [
+    {
+      "title": "Arlöv — Dust Run",
+      "style": "Instrumental desert-industrial chase music, 132 BPM. Distorted bass, detuned guitar riffs, hammered oil-drum percussion, metallic hits, gritty analog pulses and dark brass. Dusty, tense, relentless. Kick and bass from beat one; no intro, no vocals. Driving combat groove, sparse breaks, loopable end."
+    }
+  ],
+  "facts": {
+    "country": "Sverige",
+    "region": "Skåne län",
+    "landmarks": [
+      "Vårbo",
+      "Scientologi-kyrkan i Malmö",
+      "Arlövs kyrka"
+    ],
+    "streets": [
+      "Lundavägen",
+      "E 22.10",
+      "Dalbyvägen",
+      "Ringvägen",
+      "Svenshögsvägen",
+      "Hantverkaregatan",
+      "Lommavägen",
+      "Segevägen"
+    ],
+    "center": [
+      55.6341722,
+      13.0763813
+    ],
+    "size_m": 1200
+  }
+}
