@@ -46,6 +46,15 @@ def dms(v, pos, neg):
     return f'{int(d)}°{int(round((d - int(d)) * 60)):02d}′ {pos if v >= 0 else neg}'
 
 
+def room_code(name):
+    """The arena relay keeps only A–Z, 0–9 and '-': RÄTTVIK → RATTVIK, not RTTVIK. At most 11 characters,
+    because the game puts a hidden 5-character map prefix in front (arena-client.js)."""
+    import re
+    import unicodedata
+    ascii_ = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode().upper()
+    return re.sub(r'[^A-Z0-9-]', '', ascii_)[:11] or 'WASTELAND'
+
+
 def game_terrain(t, half):
     """The terrain for the game: heights in decimetres every 15 m over the play area (game x = east,
     z = south: row k is z0 + k*step, column i is x0 + i*step). The game only uses it to find the ground
@@ -228,7 +237,7 @@ def main(argv=None):
         'page_title': theme.get('page_title', f'{name} Wasteland · Battlecars'),
         'wordmark': theme.get('wordmark', f'{name[:1].upper()} / W'),
         'coordinates': f'{name.upper()}{", " + country if country and country != name.upper() else ""} <i></i> {dms(lat, "N", "S")} / {dms(lon, "E", "W")}',
-        'text': text, 'room': theme.get('room', args.slug.upper().replace('-', '')[:16]),
+        'text': text, 'room': room_code(theme.get('room') or args.slug),
         'spawn': spawn, 'bounds': {'minX': -half - 30, 'maxX': half + 30, 'minZ': -half - 30, 'maxZ': half + 30},
         'labels': labels[:12], 'districts': districts, 'squares': squares, 'crates': crates, 'fires': fires,
         'splash': splash, 'voices': voices, 'music': 'city/audio/music.json' if (audio / 'music.json').exists() else None,

@@ -23,7 +23,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createGaragePreview } from './garage.js';
 import { WorldOcclusionPass } from './occlusion.js';
 import {WEAPONS} from './weapons.js';
-import {createArenaClient,arenaURL} from './arena-client.js';
+import {createArenaClient,arenaURL,arenaMapId} from './arena-client.js';
 import {collisionMaterial} from './collision-audio.js';
 import {createResolutionGovernor} from './resolution.js';
 import {createBVHBuilder} from './bvh-builder.js';
@@ -96,7 +96,7 @@ async function startSession(){
     if(mode==='arena'){
       $('arena-status').textContent='Connecting to the arena…';
       const config=await fetch('arena-config.json').then(r=>r.ok?r.json():{}).catch(()=>({}));
-      const client=createArenaClient({url:arenaURL(config),name:$('arena-name').value,room:$('arena-room').value,vehicle,onEvent:m=>game.arenaEvent(m),onStatus:s=>{
+      const client=createArenaClient({url:arenaURL(config),name:$('arena-name').value,room:$('arena-room').value,map:arenaMapId(`${CITY.slug}@${CITY.center||''}`),vehicle,onEvent:m=>game.arenaEvent(m),onStatus:s=>{
         $('arena-status').textContent=s.connected?`${s.room} · ${s.players}/8 drivers`:'Connection lost. Return to the garage to reconnect.';
         if(!s.connected&&state!=='garage')hud.toast('ARENA CONNECTION LOST — RETURN TO GARAGE',8);
       }});

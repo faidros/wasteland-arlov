@@ -70,6 +70,19 @@ Online Arena mode is unavailable.
 To try the arena locally without a server: `npm run dev` already serves a relay at `/arena/ws`;
 open the game in two browser windows, choose ONLINE ARENA and the same room code.
 
+## Several cities on one relay
+
+One relay can serve any number of published cities, and also an older single-city game (the Kalmar
+game uses the same protocol).
+- The game puts a hidden map prefix in front of the room code: four characters from the city's slug
+  and centre, for example `R4QX-FRIDAY`. Players only see and type `FRIDAY`, and two towns never meet
+  in one room.
+- Room codes are therefore at most 11 characters.
+- Each site's origin must be in the relay's `ALLOWED_ORIGINS`. For example a site under
+  `https://bjarby.com/...` is accepted by a relay started with
+  `ALLOWED_ORIGINS=https://bjarby.com,https://www.bjarby.com`; another domain gets HTTP 403 until it
+  is added there.
+
 ## Notes
 
 - The relay trusts its players (friends' games): it verifies sender ids and rate-limits messages

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createArenaClient,arenaURL,readArenaState} from '../src/arena-client.js';
+import {createArenaClient,arenaURL,readArenaState,arenaMapId} from '../src/arena-client.js';
 import {createCarState} from '../src/physics.js';
 import * as THREE from 'three';
 
@@ -87,4 +87,25 @@ test('Alternating flame, fuel fire and afterburn damage stays batched below the 
   assert(messages.length<150*2,`expected fewer than 300 packets in two seconds, got ${messages.length}`);
   for(const weapon of ['flame','fuel','afterburn'])assert(hits.some(m=>m.target==='G'&&m.weapon===weapon));
   client.close();
+});
+
+test('Each city joins rooms under a hidden map prefix, so towns sharing a relay never meet',async()=>{
+  const joins=[];let status=null;
+  class Socket{
+    constructor(){this.readyState=1;this.bufferedAmount=0;queueMicrotask(()=>this.onopen());}
+    send(raw){const packet=JSON.parse(raw);if(packet.type==='join'){joins.push(packet.room);queueMicrotask(()=>this.onmessage({data:JSON.stringify({type:'welcome',id:'SELF',room:packet.room,host:'SELF',peers:[]})}));}}
+    close(){this.readyState=3;this.onclose();}
+  }
+  const a=arenaMapId('rattvik@60.886,15.1098'),b=arenaMapId('kalmar@56.66,16.36');
+  assert.match(a,/^[0-9A-Z]{4}$/);assert.notEqual(a,b);
+  const client=createArenaClient({url:'ws://local/arena/ws',name:'SELF',room:'FRIDAY',map:a,vehicle:'interceptor',WebSocketClass:Socket,onStatus:s=>{status=s;}});
+  await client.connect();
+  assert.equal(joins[0],`${a}-FRIDAY`,'the relay sees the prefixed room');
+  assert.equal(client.room,'FRIDAY','players see only their own code');
+  assert.equal(status.room,'FRIDAY');
+  client.close();
+  const plain=createArenaClient({url:'ws://local/arena/ws',name:'SELF',room:'KALMAR',vehicle:'interceptor',WebSocketClass:Socket});
+  await plain.connect();
+  assert.equal(joins[1],'KALMAR','without a map id the room is sent as typed (single-city games)');
+  plain.close();
 });

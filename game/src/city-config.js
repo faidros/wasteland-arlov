@@ -34,7 +34,7 @@ export function applyCityTexts(){
   const eyebrow=q('.intro .eyebrow');if(eyebrow?.lastChild)eyebrow.lastChild.nodeValue=' '+t.eyebrow;
   const h1=q('.intro h1');if(h1){const em=document.createElement('em');em.textContent=CITY.title.bottom;h1.replaceChildren(CITY.title.top,document.createElement('br'),em);}
   setLines(q('.tagline'),t.tagline);setLines(q('.intro-copy'),t.intro);
-  if($('arena-room'))$('arena-room').value=CITY.room;
+  if($('arena-room'))$('arena-room').value=String(CITY.room).slice(0,11);
   if($('load-text'))$('load-text').textContent=t.loading;
   const brand=q('.hud-brand');if(brand?.firstChild)brand.firstChild.nodeValue=CITY.wordmark+' ';
   if($('street'))$('street').textContent=(CITY.spawn.street||CITY.name).toUpperCase();

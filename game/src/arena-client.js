@@ -11,9 +11,19 @@ export function readArenaState(data){
   return {...data,pose,health:Math.max(0,Math.min(VEHICLES[data.vehicle].health,Number(data.health)||0)),life:Math.max(0,Number(data.life)||0),kills:Math.max(0,Number(data.kills)||0),deaths:Math.max(0,Number(data.deaths)||0)};
 }
 
+// Rooms on a shared relay are kept apart per city: the join carries a hidden map prefix
+// ("R4QX-" + the code the players type), so two towns never meet in the same room and
+// a relay used by an older single-city game (Kalmar) keeps working unchanged.
+export function arenaMapId(seed){
+  let h=2166136261;for(const c of String(seed||''))h=Math.imul(h^c.codePointAt(0),16777619)>>>0;
+  return h.toString(36).toUpperCase().padStart(4,'0').slice(-4);
+}
+export const ROOM_CODE_MAX=11;   // 16 on the relay minus the "XXXX-" map prefix
+
 // The relay does not simulate anything. Each browser owns its car, damage,
 // weapons and score; remote poses are delayed slightly for smooth rendering.
-export function createArenaClient({url,name,room,vehicle,WebSocketClass=WebSocket,now=()=>performance.now(),onEvent=()=>{},onStatus=()=>{}}){
+export function createArenaClient({url,name,room,map=null,vehicle,WebSocketClass=WebSocket,now=()=>performance.now(),onEvent=()=>{},onStatus=()=>{}}){
+  const prefix=map?`${map}-`:'',shown=r=>String(r||'').startsWith(prefix)?String(r).slice(prefix.length):String(r||'');
   let ws,id=null,host=null,code=room,publishTimer=0,hitTimer=0,sequence=0,closed=false;
   const peers=new Map(),pendingHits=new Map(),seenDeaths=new Set();
   const send=packet=>{if(ws?.readyState===1&&ws.bufferedAmount<64000)ws.send(JSON.stringify(packet));};
@@ -31,7 +41,7 @@ export function createArenaClient({url,name,room,vehicle,WebSocketClass=WebSocke
     (peer.buffer||=[]).push(peer.current);if(peer.buffer.length>12)peer.buffer.shift();
   }
   function roster(message){
-    host=message.host;code=message.room;
+    host=message.host;code=shown(message.room);
     const present=new Set();for(const info of message.peers||[]){if(info.id===id)continue;present.add(info.id);let peer=peers.get(info.id);
       if(!peer){peer={id:info.id,name:String(info.name).slice(0,18),vehicle:VEHICLES[info.vehicle]?info.vehicle:'interceptor'};peers.set(info.id,peer);}
       if(info.state&&!peer.current)receiveState(peer,info.state);
@@ -43,7 +53,7 @@ export function createArenaClient({url,name,room,vehicle,WebSocketClass=WebSocke
     return new Promise((resolve,reject)=>{
       const timeout=setTimeout(()=>{reject(new Error('Arena connection timed out.'));ws?.close();},8000);
       ws=new WebSocketClass(url);
-      ws.onopen=()=>send({type:'join',protocol:1,name,room,vehicle});
+      ws.onopen=()=>send({type:'join',protocol:1,name,room:prefix+String(room||'').slice(0,prefix?ROOM_CODE_MAX:16),vehicle});
       ws.onerror=()=>{clearTimeout(timeout);reject(new Error('Arena could not connect. Check the relay address.'));};
       ws.onclose=()=>{clearTimeout(timeout);peers.clear();pendingHits.clear();if(!closed)onStatus({connected:false,room:code,players:1});reject(new Error('Arena connection closed.'));};
       ws.onmessage=event=>{
