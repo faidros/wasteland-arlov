@@ -203,11 +203,12 @@ def cmd_doctor(a):
             shutil.copytree(ROOT / '.agents/skills', link)
         say(f'  {G}✓{X} linked .claude/skills → .agents/skills')
 
-    head('Optional AI services (.env)')
+    head('Optional services (.env)')
     load_env()
     for key, use in (('ELEVENLABS_API_KEY', 'voice lines that say your city\'s name'),
                      ('OPENAI_API_KEY', 'splash art from the imagegen script (Codex can draw without a key)'),
-                     ('OPENROUTER_API_KEY', 'alternative splash art via Gemini (Claude Code)')):
+                     ('OPENROUTER_API_KEY', 'alternative splash art via Gemini (Claude Code)'),
+                     ('LANTMATERIET_USER', 'Swedish cities: 1 m terrain from Lantmäteriet (free Geotorget account)')):
         say(f'  {G + "✓" + X if os.environ.get(key) else D + "–" + X} {key:20} {use}')
     say(f'  {D}–{X} Suno: no key; the agent uses suno.com in your browser (or add any mp3 with "music --add")')
 
@@ -272,6 +273,7 @@ def cmd_build(a):
         if step == 'fetch':
             py('fetch_osm.py', slug, *(['--force'] if a.refresh else []))
         elif step == 'terrain':
+            load_env()                       # LANTMATERIET_* for Sweden's 1 m ground model
             py('fetch_terrain.py', slug, *(['--force'] if a.refresh else []))
         elif step == 'prepare':
             py('prepare_city.py', slug)

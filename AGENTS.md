@@ -29,7 +29,7 @@ Answer in the user's language.
 
 ```
 wasteland.py            CLI; runs pipeline scripts in .venv, Blender headless and Node
-pipeline/               place.py (Nominatim) · fetch_osm.py (OSM API + Overpass) · fetch_terrain.py (Copernicus DEM heights)
+pipeline/               place.py (Nominatim) · fetch_osm.py (OSM API + Overpass) · fetch_terrain.py (Lantmäteriet / Copernicus heights)
                         · prepare_city.py (Shapely: all geometry
                         decisions → city.json) · make_textures.py (procedural PBR, cache/textures) · make_pack.py (map.json,
                         config.json, media copy) · theme.py · voices.py · buildings.py · style.json (palettes, heights, surfaces)
@@ -53,12 +53,15 @@ Edit **sources**, never generated files: `theme.json`, `overrides.json`, `custom
 - Coordinates: metres, local plane centred on the place. Pipeline/Blender: x east, y north, z up.
   Game: three.js x east, y up, z south (map point = `[x, -y]`); heading 0 = north, counter-clockwise.
   `render` camera specs use compass headings (clockwise).
-- Terrain: heights from the Copernicus GLO-30 surface model (AWS, free, no key), cleaned of buildings and
-  trees with the OSM footprints and forests. Heights are metres over the flat city's ground level
+- Terrain: in Sweden Lantmäteriet's 1 m ground model (Markhöjdmodell via STAC, CC BY 4.0) when .env has
+  LANTMATERIET_USER/PASSWORD (a free Geotorget account with access to "Markhöjdmodell Nedladdning");
+  otherwise the Copernicus GLO-30 surface model (AWS, free, no key), cleaned of buildings and trees
+  with the OSM footprints and forests. Heights are metres over the flat city's ground level
   (0 = 1.2 m above the main water). Ground layers, kerbs and rails follow it vertex by vertex; buildings
   move as one piece by `base` and get a concrete foundation down to `base_min`. The game gets a coarse
   copy in map.json `terrain` (`network.heightAt`). `"defaults": {"terrain": false}` in overrides.json
-  builds a city flat; `"terrain_scale"` exaggerates or flattens it. Keep the Copernicus attribution.
+  builds a city flat; `"terrain_scale"` exaggerates or flattens it. Keep the terrain attribution
+  (Lantmäteriet CC BY 4.0 / Copernicus); make_pack.py adds it to the pack.
 - Objects carry `wb_tile` (`base` = always loaded ground/water/curbs, `c<i>_<j>` = 60 m streamed tiles).
   The game swaps tile materials for `materials.glb` entries by exact name (tiles.mjs keeps unique names).
 - Facade textures are one window bay × one storey; their alpha is a tint mask (wall = tinted per
@@ -67,7 +70,7 @@ Edit **sources**, never generated files: `theme.json`, `overrides.json`, `custom
   glass/wood/metal choose collision sounds. Keep these names when adding things.
 - Blender ≥ 4.2 (tested 5.2). In Eevee a world volume renders black — use a volume box for haze.
 - Data sources: OSM API `/map` (primary, fast), Overpass mirrors (completion/backup), Nominatim
-  (search), Copernicus DEM (terrain). Be polite: one download per city, reuse `osm.json`. OSM data is ODbL — keep attribution.
+  (search), Lantmäteriet STAC / Copernicus DEM (terrain). Be polite: one download per city, reuse `osm.json`. OSM data is ODbL — keep attribution.
 - Secrets only in `.env` (git-ignored); never print or commit keys. Ask before paid generations
   (images, voices, music) and before any action on the user's servers, DNS or accounts.
 

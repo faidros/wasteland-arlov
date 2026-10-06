@@ -151,6 +151,13 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(self.map['terrain']['n'] ** 2, len(self.map['terrain']['dm']))
         self.assertIn('Terrain: test', self.map['attribution'])
 
+    def test_sweref99tm(self):
+        import fetch_terrain
+        # The top-left corner of Lantmäteriet's tile 675_50 (E 500 000, N 6 760 000) lies on the central meridian.
+        north, east = fetch_terrain.sweref99tm(prepare_city.np.array([60.974975386470945]), prepare_city.np.array([15.0]))
+        self.assertAlmostEqual(float(north[0]), 6760000.0, delta=0.01)
+        self.assertAlmostEqual(float(east[0]), 500000.0, delta=0.01)
+
     def test_building_listing(self):
         import contextlib
         import io

@@ -946,14 +946,19 @@ def load_terrain(folder, proj, half, B, land, water, foot, forest, defaults):
     if defaults.get('terrain') is False or not path.exists():
         return None
     src = json.loads(path.read_text())
-    Z = np.array(src['z'], dtype=float).reshape(src['rows'], src['cols'])
     ext = half + TERRAIN_MARGIN
     n = int(round(2 * ext / TSTEP)) + 1
     xs = -ext + np.arange(n) * TSTEP
-    lat = proj.lat0 + xs / EARTH
-    lon = proj.lon0 + xs / proj.kx
-    dsm = _bilinear(Z, ((src['lat0'] - lat) / src['dlat'])[:, None] + 0 * xs[None, :], ((lon - src['lon0']) / src['dlon'])[None, :] + 0 * xs[:, None])
     X, Y = np.meshgrid(xs, xs)                                   # row = y (south → north), column = x
+    if src.get('frame') == 'local':                              # a grid in the city's own plane
+        Z = np.array(src['z'], dtype=float).reshape(src['n'], src['n'])
+        dsm = _bilinear(Z, (Y - src['y0']) / src['step'], (X - src['x0']) / src['step'])
+    else:                                                        # older files: a lat/lon grid
+        Z = np.array(src['z'], dtype=float).reshape(src['rows'], src['cols'])
+        lat = proj.lat0 + xs / EARTH
+        lon = proj.lon0 + xs / proj.kx
+        dsm = _bilinear(Z, ((src['lat0'] - lat) / src['dlat'])[:, None] + 0 * xs[None, :], ((lon - src['lon0']) / src['dlon'])[None, :] + 0 * xs[:, None])
+    ground_model = src.get('kind') == 'dtm'                      # Lantmäteriet: already bare ground
 
     def inside(g):
         return shapely.contains_xy(g, X, Y) if g is not None and not g.is_empty else np.zeros(X.shape, bool)
@@ -965,11 +970,15 @@ def load_terrain(folder, proj, half, B, land, water, foot, forest, defaults):
     # The source is a surface model: cut out mapped buildings and forests and fill them from the open
     # ground round them; an opening (min, then max, over ~75 m) removes unmapped houses and garden
     # trees; a blur smooths the 30 m source grid.
-    g = dsm.copy()
-    g[(inside(foot.buffer(4.0)) | inside(forest.buffer(4.0))) & ~wet] = np.nan
-    g = _fill(g)
-    g = _window(_window(g, 5, np.min), 5, np.max)
-    g = _blur(g, 2.0)
+    # A ground model (Lantmäteriet's laser-scanned DTM) only gets a light blur against 1 m noise.
+    if ground_model:
+        g = _blur(dsm, 0.6)
+    else:
+        g = dsm.copy()
+        g[(inside(foot.buffer(4.0)) | inside(forest.buffer(4.0))) & ~wet] = np.nan
+        g = _fill(g)
+        g = _window(_window(g, 5, np.min), 5, np.max)
+        g = _blur(g, 2.0)
     if lake is None:
         d = g - float(np.percentile(g[in_b], 1))
     else:

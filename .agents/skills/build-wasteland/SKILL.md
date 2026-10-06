@@ -33,7 +33,8 @@ python3 wasteland.py new "<place>" --size medium      # small 600 m · medium 10
 ```sh
 python3 wasteland.py build <slug>        # 1–5 minutes; run it in the background and wait
 ```
-Steps: fetch (OSM API, Overpass as backup) → terrain (Copernicus DEM heights, ~1 s) → prepare
+Steps: fetch (OSM API, Overpass as backup) → terrain (heights: Lantmäteriet 1 m for Swedish places when
+.env has LANTMATERIET_USER/PASSWORD, else Copernicus 30 m; seconds) → prepare
 (Shapely) → textures → blender (city.blend) → export (tiles) → tiles (meshopt/WebP) → pack (map.json +
 config.json) → splash (Blender render).
 Resume a failed run with `--from <step>`; `--refresh` downloads OSM data and terrain again. Without
