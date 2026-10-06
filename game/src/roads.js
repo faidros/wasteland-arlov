@@ -126,5 +126,14 @@ export function createRoadNetwork(map) {
     if(lands.some(a=>pointInPolygon(x,z,a.p[0])&&!a.p.slice(1).some(p=>pointInPolygon(x,z,p))))return true;
     const n=nearest(x,z);return n&&n.d<n.road.w/2+1.8;
   }
-  return {map,segments,nodes,nearest,nearestNode,path,hitsBuilding,carCollision,onLand};
+  // Terrain (map.terrain, decimetres every 15 m): where the ground is before its tile has loaded, and the
+  // height a downward ray starts from. Flat cities have none and stay at 0.
+  const T=map.terrain;
+  function heightAt(x,z){
+    if(!T)return 0;
+    const fx=Math.min(Math.max((x-T.x0)/T.step,0),T.n-1.000001),fz=Math.min(Math.max((z-T.z0)/T.step,0),T.n-1.000001);
+    const i=Math.floor(fx),j=Math.floor(fz),tx=fx-i,tz=fz-j,d=T.dm,n=T.n;
+    return ((d[j*n+i]*(1-tx)+d[j*n+i+1]*tx)*(1-tz)+(d[(j+1)*n+i]*(1-tx)+d[(j+1)*n+i+1]*tx)*tz)/10;
+  }
+  return {map,segments,nodes,nearest,nearestNode,path,hitsBuilding,carCollision,onLand,heightAt};
 }

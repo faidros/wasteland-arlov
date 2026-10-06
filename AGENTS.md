@@ -20,7 +20,7 @@ Answer in the user's language.
 ## Commands (`python3 wasteland.py …`, stdlib only)
 
 `doctor` (install/check everything) · `make "<place>"` (new + build + play) · `new "<place>" [--size small|medium|large|<m>] [--pick N] [--center lat,lon]`
-· `build <slug> [--from STEP | --only a,b] [--refresh]` with steps `fetch prepare textures blender export tiles pack splash`
+· `build <slug> [--from STEP | --only a,b] [--refresh]` with steps `fetch terrain prepare textures blender export tiles pack splash`
 · `rebuild <slug>` · `play <slug> [--open]` (dev server :5220, run in background) · `list` · `status <slug>`
 · `theme <slug>` · `voices <slug>` · `music <slug> --add f.mp3 --title …` · `buildings <slug> --street … | --near … [--json]`
 · `render <slug> [cameras | street:x,y,heading] [--street … | --near …]` · `publish <slug> [--arena wss://…]`
@@ -29,7 +29,8 @@ Answer in the user's language.
 
 ```
 wasteland.py            CLI; runs pipeline scripts in .venv, Blender headless and Node
-pipeline/               place.py (Nominatim) · fetch_osm.py (OSM API + Overpass) · prepare_city.py (Shapely: all geometry
+pipeline/               place.py (Nominatim) · fetch_osm.py (OSM API + Overpass) · fetch_terrain.py (Copernicus DEM heights)
+                        · prepare_city.py (Shapely: all geometry
                         decisions → city.json) · make_textures.py (procedural PBR, cache/textures) · make_pack.py (map.json,
                         config.json, media copy) · theme.py · voices.py · buildings.py · style.json (palettes, heights, surfaces)
 pipeline/blender/       build_city.py (city.json → city.blend) · citylib.py (materials, mesh builder, props, custom-building API)
@@ -37,7 +38,7 @@ pipeline/blender/       build_city.py (city.json → city.blend) · citylib.py (
 pipeline/web/tiles.mjs  gltf-transform: meshopt tiles + WebP material library
 game/                   the Three.js game (see game/README.md); public/city → cities/<slug>/pack (symlink)
 game/server, game/deploy  WebSocket relay for Online Arena + VPS installer
-cities/<slug>/          per city (git-ignored): place.json, osm.json, city.json, city.blend, build/, pack/ (what the game loads)
+cities/<slug>/          per city (git-ignored): place.json, osm.json, terrain.json, city.json, city.blend, build/, pack/ (what the game loads)
                         and the editable sources: theme.json, overrides.json, custom/<id>.py, media/, refinements.md
 docs/                   images, custom-building-example.py
 ```
@@ -52,6 +53,12 @@ Edit **sources**, never generated files: `theme.json`, `overrides.json`, `custom
 - Coordinates: metres, local plane centred on the place. Pipeline/Blender: x east, y north, z up.
   Game: three.js x east, y up, z south (map point = `[x, -y]`); heading 0 = north, counter-clockwise.
   `render` camera specs use compass headings (clockwise).
+- Terrain: heights from the Copernicus GLO-30 surface model (AWS, free, no key), cleaned of buildings and
+  trees with the OSM footprints and forests. Heights are metres over the flat city's ground level
+  (0 = 1.2 m above the main water). Ground layers, kerbs and rails follow it vertex by vertex; buildings
+  move as one piece by `base` and get a concrete foundation down to `base_min`. The game gets a coarse
+  copy in map.json `terrain` (`network.heightAt`). `"defaults": {"terrain": false}` in overrides.json
+  builds a city flat; `"terrain_scale"` exaggerates or flattens it. Keep the Copernicus attribution.
 - Objects carry `wb_tile` (`base` = always loaded ground/water/curbs, `c<i>_<j>` = 60 m streamed tiles).
   The game swaps tile materials for `materials.glb` entries by exact name (tiles.mjs keeps unique names).
 - Facade textures are one window bay × one storey; their alpha is a tint mask (wall = tinted per
@@ -60,7 +67,7 @@ Edit **sources**, never generated files: `theme.json`, `overrides.json`, `custom
   glass/wood/metal choose collision sounds. Keep these names when adding things.
 - Blender ≥ 4.2 (tested 5.2). In Eevee a world volume renders black — use a volume box for haze.
 - Data sources: OSM API `/map` (primary, fast), Overpass mirrors (completion/backup), Nominatim
-  (search). Be polite: one download per city, reuse `osm.json`. OSM data is ODbL — keep attribution.
+  (search), Copernicus DEM (terrain). Be polite: one download per city, reuse `osm.json`. OSM data is ODbL — keep attribution.
 - Secrets only in `.env` (git-ignored); never print or commit keys. Ask before paid generations
   (images, voices, music) and before any action on the user's servers, DNS or accounts.
 

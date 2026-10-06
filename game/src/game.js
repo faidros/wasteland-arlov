@@ -10,6 +10,7 @@ import {createArenaEffects} from './arena-effects.js';
 import {CITY} from './city-config.js';
 
 export function createGame({scene,city,network,vehicles,effects,audio,hud,onEnd}){
+  const terrainY=(x,z)=>city.heightAt?.(x,z)??.1;   // the ground before its tile has loaded
   const g={player:createCarState({x:CITY.spawn.x,z:CITY.spawn.z,heading:CITY.spawn.heading}),vehicle:'interceptor',mode:'survival',health:130,
     enemies:[],pickups:[],wave:1,waveDelay:0,scrap:0,kills:0,time:0,heat:0,overheated:false,ended:false};
   let playerMesh=null,gunTimer=0,groundTimer=0,dustTimer=0,ramCooldown=0,waterTimer=0,critical=false,tapFire=0;
@@ -35,7 +36,7 @@ export function createGame({scene,city,network,vehicles,effects,audio,hud,onEnd}
       const mat=new THREE.MeshBasicMaterial({color:0xe5ecd2});
       const a=new THREE.Mesh(new THREE.BoxGeometry(.15,.02,.5),mat),b=new THREE.Mesh(new THREE.BoxGeometry(.5,.02,.15),mat);a.position.y=b.position.y=.311;root.add(a,b);
     }
-    const y=city.groundAt(x,z)??.1;root.position.set(x,y+.6,z);scene.add(root);
+    const y=city.groundAt(x,z)??terrainY(x,z);root.position.set(x,y+.6,z);scene.add(root);
     const p={x,z,y,kind,root,active:true,respawn:0};g.pickups.push(p);return p;
   }
   function scatterSupplies(){
@@ -68,7 +69,7 @@ export function createGame({scene,city,network,vehicles,effects,audio,hud,onEnd}
   function reset(vehicle,mode){
     sessionSerial++;
     clean();g.vehicle=vehicle;g.mode=mode;g.player=createCarState({x:CITY.spawn.x,z:CITY.spawn.z,heading:CITY.spawn.heading});
-    g.player.y=city.groundAt(g.player.x,g.player.z)??.1;
+    g.player.y=city.groundAt(g.player.x,g.player.z)??terrainY(g.player.x,g.player.z);
     Object.assign(g,{health:VEHICLES[vehicle].health,panelDamage:0,wave:1,waveDelay:0,scrap:0,kills:0,time:0,heat:0,overheated:false,ended:false,cameraShake:0,stuckTime:0,recovering:false,recoveryShield:0,recoveryCooldown:0,recoveries:0,enemyRecoveries:0,arena:null,arenaLife:1,arenaRespawn:0,deaths:0,lastAttacker:null});
     gunTimer=groundTimer=dustTimer=ramCooldown=waterTimer=tapFire=0;critical=lastBoost=false;
     progressTime=progressDistance=0;blockedInWindow=false;
@@ -80,7 +81,7 @@ export function createGame({scene,city,network,vehicles,effects,audio,hud,onEnd}
       const n=network.nearest(target.x,target.z,true);if(!n)continue;
       const {a,b}=n.segment,dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz)||1;
       const x=n.x-dz/len*n.road.w*.43,z=n.z+dx/len*n.road.w*.43;
-      if(!network.hitsBuilding(x,z,.5))effects.burn?.({x,y:city.groundAt(x,z)??.1,z},3600,1.4);
+      if(!network.hitsBuilding(x,z,.5))effects.burn?.({x,y:city.groundAt(x,z)??terrainY(x,z),z},3600,1.4);
     }
     if(mode==='survival')spawnWave();
     audio.startEngine();audio.say('intro');
@@ -98,11 +99,11 @@ export function createGame({scene,city,network,vehicles,effects,audio,hud,onEnd}
         const candidate=candidates[Math.floor(Math.random()*candidates.length)];if(!candidate)break;
         const neighbor=network.nodes[candidate.links[0].id];
         const h=Math.atan2(-(neighbor.x-candidate.x),-(neighbor.z-candidate.z));
-        const pose={...candidate,heading:h,y:city.groundAt(candidate.x,candidate.z)??.1};
+        const pose={...candidate,heading:h,y:city.groundAt(candidate.x,candidate.z)??terrainY(candidate.x,candidate.z)};
         if(!network.carCollision(pose,VEHICLES[id])&&(!city.poseClear||city.poseClear(pose,VEHICLES[id]))&&!used.some(p=>Math.hypot(p.x-candidate.x,p.z-candidate.z)<9)){n=candidate;heading=h;break;}
       }
       if(!n)continue;used.push(n);
-      const state=createCarState({x:n.x,z:n.z,heading,y:city.groundAt(n.x,n.z)??.1});
+      const state=createCarState({x:n.x,z:n.z,heading,y:city.groundAt(n.x,n.z)??terrainY(n.x,n.z)});
       const mesh=vehicles.create(id);scene.add(mesh);vehicles.update(mesh,state,0);
       g.enemies.push({id,state,mesh,health:id==='wartruck'?140:65,path:[],pathIndex:0,routeTimer:0,groundTimer:0,fireTimer:2+Math.random()*2,stuck:0,reverse:0,wreckTime:0});
     }
@@ -347,7 +348,7 @@ export function createGame({scene,city,network,vehicles,effects,audio,hud,onEnd}
     if(!input.fire||g.overheated)g.heat=Math.max(0,g.heat-dt*.27);
     if(g.overheated&&g.heat<.2)g.overheated=false;
     if((groundTimer-=dt)<=0){groundTimer=.07;
-      const y=city.groundAt(g.player.x,g.player.z,g.player.y);if(y!==null)setGroundReference(g.player,g.player.y+clamp(y-g.player.y,-.35,.35));
+      const y=city.groundAt(g.player.x,g.player.z,g.player.y);if(y!==null)setGroundReference(g.player,g.player.y+clamp(y-g.player.y,-.75,.4));   // a fast car follows a downhill road
       if(!network.onLand(g.player.x,g.player.z))waterTimer+=.07;else waterTimer=0;
       if(waterTimer>1.5){g.stuckTime=6;}
     }

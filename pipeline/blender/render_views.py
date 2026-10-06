@@ -3,14 +3,19 @@
     Blender -b cities/<slug>/city.blend --python pipeline/blender/render_views.py -- <out dir> [camera names…|street:x,y,heading_deg]
 
 Without camera names every camera in 'Review cameras' is rendered. A 'street:x,y,heading' spec
-renders a 1.6 m high street-level view at local metres (x east, y north; heading 0 = north).
+renders a 1.6 m high street-level view at local metres (x east, y north; heading 0 = north), standing
+on the terrain.
 Uses Eevee when a GPU is available and falls back to Workbench (textured) otherwise.
 """
 import math
 import os
 import sys
+from pathlib import Path
 
 import bpy
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import citylib  # noqa: E402
 
 args = sys.argv[sys.argv.index('--') + 1:]
 out = os.path.abspath(args[0])
@@ -63,7 +68,7 @@ if specs:
             c = bpy.data.objects.new(f'street_{x:.0f}_{y:.0f}', bpy.data.cameras.new('street'))
             c.data.lens = float(os.environ.get('WB_LENS', '22'))
             c.data.clip_end = 3000
-            c.location = (x, y, float(os.environ.get('WB_EYE', '1.6')))
+            c.location = (x, y, float(os.environ.get('WB_EYE', '1.6')) + float(citylib.Terrain.of_scene(scene).at(x, y)))
             c.rotation_euler = (math.radians(90 + float(os.environ.get('WB_PITCH', '4'))), 0, -math.radians(hd))
             scene.collection.objects.link(c)
             cams.append(c)

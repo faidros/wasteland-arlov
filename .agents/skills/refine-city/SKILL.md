@@ -52,8 +52,19 @@ pass. Three levels, cheapest first:
    Building keys: any OSM tag (`building:levels`, `height`, `min_height`, `roof:shape` = flat|gabled|hipped|pyramidal,
    `roof:height`, `roof:colour`, `roof:material`, `building:colour`, `building:material`), plus
    `style` (plaster, brick, wood, stone, concrete, glass, metal), `colour` (a palette name from
-   `pipeline/style.json` for that style), `roof` (flat|gabled|hipped|pyramidal), `hide`, `no_tower`,
-   and free-text `note`. Specific building entries win over area rules.
+   `pipeline/style.json` for that style, `colours` or `extra_colours`), `roof` (flat|gabled|hipped|pyramidal),
+   `roof_style` (tiles|metal|slate) with `roof_colour` (a palette name), `shopfront` (true/false: shop
+   windows on the ground floor), `hide`, `no_tower`, and free-text `note`. Specific building entries win
+   over area rules. A top-level `"defaults": {"max_levels": 3}` caps the *estimated* storeys of buildings
+   OSM says nothing about (small towns); `"defaults": {"terrain": false}` builds the city flat and
+   `"defaults": {"terrain_scale": 1.5}` exaggerates the hills (1 = real).
+   Area rules can mix instead of fixing one look, so a villa district gets a believable spread:
+   `"look_mix": {"brick/red": 3, "wood/white": 3, "wood/falu": 2}` (style/colour pairs),
+   `"roof_look_mix": {"tiles/dark": 4, "tiles/red": 3}`, `"roof_mix": {"gabled": 3, "hipped": 1}`, any
+   `"<key>_mix"`, plus `"max_levels"` and `"levels_mix": {"1": 3, "2": 2}` (houses ≥ 60 m² only, never
+   sheds). Picks are deterministic per building. Sample 3–5 Street View frames per district to set them.
+   Matching a Street View frame to building ids: render the model from the same spot and heading
+   (`street:x,y,heading`, `WB_EYE=2.5 WB_PITCH=8 WB_LENS=18` for a 90° view) and compare side by side.
    Road keys: `surface` (asphalt, sett, paving_stones, gravel …), `width`, `sidewalk` (both|left|right|no), `hide`.
 5. **Rebuild and compare:**
    ```sh
@@ -61,6 +72,9 @@ pass. Three levels, cheapest first:
    python3 wasteland.py render <slug> --street "Strandgatan" # street-level views → cities/<slug>/renders/
    ```
    Put each render next to its Street View screenshot and adjust. Two or three iterations are normal.
+   Street cameras stand on the terrain (eye height over the ground). A building sits on its `base`
+   (a little above its lowest corner) with a concrete foundation down the slope; custom scripts draw
+   from z = 0 as before and are lifted as one piece.
 6. **Log the round** in `cities/<slug>/refinements.md`: date, scope, what changed and why (Street View
    date/heading, which photo in `references/`, user knowledge). This is the project's memory for later rounds.
 
@@ -83,3 +97,30 @@ game streams them like any tile. Rebuild and render as above.
 
 Summarise the round for the user (buildings changed, before/after renders in `cities/<slug>/renders/`),
 then `python3 wasteland.py play <slug>` if they want to drive it.
+
+## Ordinary houses: housekit
+
+For the many plain town houses, don't write geometry by hand: `pipeline/blender/housekit.py` turns a
+short description into a detailed house on the OSM footprint (real window openings with reveals, glass,
+frames and sills, corner boards, plinth, cornice, party walls left blank, street-side shopfronts with a
+sign band and striped awnings, gabled/hipped/mansard/flat roofs per rectangle of an L- or T-plan with
+fascias and gutters, dormers, a frontkvist/cross gable, chimneys, balconies, verandas, sign text).
+```python
+# cities/<slug>/custom/<building id>.py
+import housekit
+h = housekit.House(ctx, levels=2, wall='M_Wall_Wood_petrol_Blank', trim='M_Wall_Wood_white_Blank', shop=True)
+h.facades(window=(1.3, 1.5), pitch=2.6, sign_mat='M_Wall_Metal_blue_Blank', awnings=['M_Roof_Metal_red', 'M_Wall_Wood_white_Blank'])
+h.roof(shape='gabled', pitch=24, mat='M_Roof_Metal_black')          # 'hipped', 'mansard', 'flat'; ridge='short' turns it
+h.cross_gable(frac=0.22, width=5.0, pitch=52)                        # on the street side
+h.dormers([0.3, 0.7], side='street'); h.chimney(0.12, 0.45)
+h.balcony(wall_index, x=4.0, storey=2, glass=True); h.sign('Conditori', size=0.6, mat='M_Roof_Metal_red')
+h.gallery(wall_index, 4.0, 12.0, stair='left')                       # loftgång with an outside stair
+h.porch(wall_index, x=6.0, roof_mat='M_Roof_Tiles_red')               # gabled entrance porch (facades(skip=…))
+```
+Starter scripts for many houses at once come from the overrides notes:
+`python3 pipeline/housekit_seed.py <slug> --ids w1,w2 --force` (`--unsurveyed` also seeds every other
+house from its generated look). `--force` only replaces untouched starter scripts. When you edit a
+script by hand, replace the "Starter script…" line in its docstring, and the seeder will keep it.
+Street sides are found from the city's roads; pass `street=[wall_index]` when the guess is wrong (a
+building beside a square). Check each house from the street in front of it, compare with the Street
+View frame, adjust, repeat.

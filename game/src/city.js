@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { weatherMaterial } from './wasteland.js';
 import { separateStreetProps,ramStreetProp,stepStreetProp } from './props.js';
 
-export async function createCity(scene,loader,renderer,{lite=false,weathering=null,onProgress=()=>{},buildBVH=null,batches=null,lod=true}={}) {
+export async function createCity(scene,loader,renderer,{lite=false,weathering=null,onProgress=()=>{},buildBVH=null,batches=null,lod=true,heightAt=()=>0}={}) {
   const index=await fetch('city/tiles/tiles.json').then(r=>{if(!r.ok)throw new Error('City tiles are missing. Build a city with: python3 wasteland.py build <place>');return r.json();});
   const materials=new Map();
   const lib=await loader.loadAsync(`city/tiles/materials${lite?'-mobile':''}.glb`);
@@ -153,7 +153,7 @@ export async function createCity(scene,loader,renderer,{lite=false,weathering=nu
     for(const o of colliders){const b=o.userData.collisionBounds;if(!b||b.max.x>=minX&&b.min.x<=maxX&&b.max.y>=minY&&b.min.y<=maxY&&b.max.z>=minZ&&b.min.z<=maxZ)reachable.push(o);}
     return reachable;
   }
-  function groundAt(x,z,y=.1){
+  function groundAt(x,z,y=heightAt(x,z)+.1){
     origin.set(x,y+2.5,z);ray.set(origin,down);ray.far=8;
     const hit=ray.intersectObjects(reach(x,x,y-5.5,y+2.5,z,z),false).find(h=>h.face?.normal.y>.35);
     return hit?hit.point.y:null;
@@ -239,7 +239,7 @@ export async function createCity(scene,loader,renderer,{lite=false,weathering=nu
     }
     return true;
   }
-  return {batches,ensure,update,groundAt,solidRay,carHit,poseClear,geometryReady,ramProp,updateProps,resetProps,props,colliders,tiles,stats:()=>({loaded:tiles.filter(t=>t.state==='loaded').length,loading:tiles.filter(t=>t.state==='loading').length}),anchor,get revision(){return revision;}};
+  return {batches,ensure,update,groundAt,heightAt,solidRay,carHit,poseClear,geometryReady,ramProp,updateProps,resetProps,props,colliders,tiles,stats:()=>({loaded:tiles.filter(t=>t.state==='loaded').length,loading:tiles.filter(t=>t.state==='loading').length}),anchor,get revision(){return revision;}};
 }
 
 // Generated cities share neutral facade/roof textures and tint them per building (extras.tint). The base

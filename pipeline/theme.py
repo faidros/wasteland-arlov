@@ -31,6 +31,8 @@ def default_theme(place, city):
         'title_bottom': 'WASTELAND',
         'page_title': f'{name} Wasteland · Battlecars',
         'room': name.upper().replace(' ', '')[:16],
+        '_map_labels_help': 'Extra tactical-map labels, shown first: a landmark/place name from facts, or {"name": …, "lat": …, "lon": …}.',
+        'map_labels': [],
         'text': {
             'eyebrow': 'THE STREETS ARE YOURS. KEEP THEM.',
             'tagline': 'Same streets. New rules.',

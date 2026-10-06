@@ -197,7 +197,7 @@ function updateCamera(dt,s,controls){
   vehicles.setCockpit(game.playerMesh,view==='cockpit',s,game.state);
   const targetFov=(view==='cockpit'?(camera.aspect<1?-4:8):0)+(s.boosting?78:Math.min(72,63+Math.abs(s.speed)*.13));
   camera.fov+=(targetFov-camera.fov)*(1-Math.exp(-3*dt));camera.updateProjectionMatrix();
-  const center=new THREE.Vector3(s.x,0,s.z);sun.target.position.copy(center);sun.position.copy(center).addScaledVector(sunDirection,150);
+  const center=new THREE.Vector3(s.x,s.y||0,s.z);sun.target.position.copy(center);sun.position.copy(center).addScaledVector(sunDirection,150);
   const shake=game?.state.cameraShake||0;
   if(shake){camera.position.x+=(Math.random()-.5)*shake;camera.position.y+=(Math.random()-.5)*shake*.65;game.state.cameraShake=Math.max(0,shake-dt*.9);}
 }
@@ -286,7 +286,7 @@ async function boot(){
     audio=await createAudio();
     if(audio.musicTitle)$('radio-title').textContent=`1/${audio.trackCount} · ${audio.musicTitle.toUpperCase()}`;
     city=await createCity(scene,loader,renderer,{lite:touch,weathering,buildBVH:createBVHBuilder(),// Opt-in until inserting streamed tiles costs less than it saves (see deploy/README.md).
-      batches:params.has('batch')?createCityBatches(scene):null,lod:!params.has('nolod'),onProgress:p=>progress(.35+p*.6,'Preparing the streets…')});
+      batches:params.has('batch')?createCityBatches(scene):null,lod:!params.has('nolod'),heightAt:network.heightAt,onProgress:p=>progress(.35+p*.6,'Preparing the streets…')});
     await city.ensure(spawn,80);
     const effects=createEffects(scene,camera),destruction=createDestruction(scene,effects);
     city.damage=destruction.damage;city.clearDamage=destruction.clear;

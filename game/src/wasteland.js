@@ -94,7 +94,7 @@ export function createWasteland(scene,network,city,{lite=false}={}){
       .sort((a,b)=>(a.x-player.x)**2+(a.z-player.z)**2-(b.x-player.x)**2-(b.z-player.z)**2).slice(0,pool);
     let n=0;
     for(const p of nearby){
-      if(p.y===null||time-p.checked>4){p.y=city.groundAt(p.x,p.z,player.y);p.checked=time;}
+      if(p.y===null||time-p.checked>4){p.y=city.groundAt(p.x,p.z);p.checked=time;}
       if(p.y===null)continue;
       dummy.position.set(p.x,p.y+.11,p.z);dummy.rotation.set(p.size*.4,p.angle,p.size*.5);
       dummy.scale.set(.2+p.size*.55,.1+p.size*.15,.25+p.size*.65);dummy.updateMatrix();rubble.setMatrixAt(n,dummy.matrix);

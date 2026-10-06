@@ -3,8 +3,9 @@
     .venv/bin/python -m unittest discover tests
 
 A synthetic OpenStreetMap extract (coast, two streets, houses, an apartment block, a church, a park,
-trees) goes through prepare_city.py and make_pack.py; the results are checked for sea/land, buildings,
-roofs, sidewalks, the spawn point and the game map.
+trees) and a synthetic terrain (a slope with a bump on the church) go through prepare_city.py and
+make_pack.py; the results are checked for sea/land, buildings, roofs, sidewalks, the terrain, the
+spawn point and the game map.
 """
 import json
 import shutil
@@ -62,6 +63,22 @@ class PipelineTest(unittest.TestCase):
             {'type': 'node', 'id': 101, 'tags': {'highway': 'street_lamp'}, **ll(10, 6)},
         ]
         (folder / 'osm.json').write_text(json.dumps({'elements': elements}))
+        # Terrain (like fetch_terrain.py's terrain.json): the sea at 10 m, land 1.2 m above it rising
+        # northwards at 4 %, and a surface-model bump of 8 m on the church that must be cleaned away.
+        step = 1 / 3600
+        lat_n, lon_w = P.latlon(0, 1100)[0], P.latlon(-1100, 0)[1]
+        rows, cols = 2 * 1100 // 31 + 2, 2 * 1100 // 18 + 2
+        dlon = (P.latlon(1100, 0)[1] - lon_w) / (cols - 1)
+        z = []
+        for r in range(rows):
+            for c in range(cols):
+                x, y = P.xy(lat_n - r * step, lon_w + c * dlon)
+                h = 10.0 if y < -150 else 11.2 + 0.04 * (y + 150)
+                if -80 <= x <= -40 and 40 <= y <= 56:
+                    h += 8.0
+                z.append(round(h, 2))
+        (folder / 'terrain.json').write_text(json.dumps({'source': 'synthetic', 'attribution': 'Terrain: test', 'lat0': lat_n, 'lon0': lon_w,
+                                                         'dlat': step, 'dlon': dlon, 'rows': rows, 'cols': cols, 'z': z}))
         prepare_city.main([SLUG])
         make_pack.main([SLUG])
         cls.city = json.loads((folder / 'city.json').read_text())
@@ -112,6 +129,27 @@ class PipelineTest(unittest.TestCase):
                 self.assertLessEqual(abs(x), half)
                 self.assertLessEqual(abs(z), half)
         self.assertTrue(any(a['k'] == 'land' for a in self.map['areas']))
+
+    def test_terrain(self):
+        t = self.city['terrain']
+        self.assertIsNotNone(t)
+        at = lambda x, y: prepare_city.terrain_at({**t, 'd': prepare_city.np.asarray(t['d']).reshape(t['n'], t['n'])}, x, y)
+        self.assertAlmostEqual(float(at(0, -300)), 0.0, delta=0.01, msg='the sea stays at the flat level')
+        self.assertAlmostEqual(float(at(0, 250)), 0.04 * 400, delta=1.5, msg='the slope is kept')
+        church = {b['id']: b for b in self.city['buildings']}['w13']
+        self.assertAlmostEqual(church['base'], 0.04 * 198, delta=1.5, msg='the surface-model bump on the church is cleaned away')
+        for b in self.city['buildings']:
+            self.assertGreaterEqual(b['base'], b['base_min'])
+        # Ground layers are cut into 7.5 m squares so they can follow the terrain.
+        ground = self.city['surfaces']['ground'][0]
+        v = ground['v']
+        for k in range(0, len(ground['t']), 3):
+            a, b, c = (v[3 * ground['t'][k + i]:3 * ground['t'][k + i] + 2] for i in range(3))
+            longest = max(((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2) ** 0.5 for p, q in ((a, b), (b, c), (c, a)))
+            self.assertLessEqual(longest, 7.5 * 2 ** 0.5 + 0.01)
+        self.assertTrue(self.city['outskirts'], 'the surroundings beyond the play area')
+        self.assertEqual(self.map['terrain']['n'] ** 2, len(self.map['terrain']['dm']))
+        self.assertIn('Terrain: test', self.map['attribution'])
 
     def test_building_listing(self):
         import contextlib

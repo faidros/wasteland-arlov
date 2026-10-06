@@ -1,17 +1,21 @@
 {
-  "_comment": "Shared look of generated cities. Colours are sRGB 0-1. Each wall style has one neutral texture set (upper floors, ground floor, blank) that is tinted per colour. Edit freely: prepare_city.py picks styles/colours, blender/build_city.py turns them into materials.",
+  "_comment": "Shared look of generated cities. Colours are sRGB 0-1. 'colours' are picked at random for buildings without data; 'extra_colours' only when an OSM tag, overrides.json or a custom model asks for them. Each wall style has one neutral texture set (upper floors, ground floor, blank) that is tinted per colour. Edit freely: prepare_city.py picks styles/colours, blender/build_city.py turns them into materials.",
   "storey_m": 3.0,
   "ground_storey_m": 3.8,
   "wall_styles": {
     "plaster": {"bay": 3.2, "colours": {
       "ivory": [0.90, 0.86, 0.74], "ochre": [0.84, 0.66, 0.40], "yellow": [0.93, 0.83, 0.54], "salmon": [0.87, 0.63, 0.52],
       "rose": [0.82, 0.62, 0.60], "white": [0.93, 0.92, 0.89], "grey": [0.71, 0.71, 0.69], "green": [0.71, 0.79, 0.67],
-      "blue": [0.64, 0.72, 0.80], "terracotta": [0.74, 0.44, 0.32]}},
+      "blue": [0.64, 0.72, 0.80], "terracotta": [0.74, 0.44, 0.32]},
+      "extra_colours": {"beige": [0.84, 0.74, 0.62], "red": [0.66, 0.26, 0.22]}},
     "brick": {"bay": 3.2, "colours": {
-      "red": [0.64, 0.33, 0.25], "brown": [0.48, 0.31, 0.25], "yellow": [0.82, 0.70, 0.50], "dark": [0.36, 0.28, 0.25]}},
+      "red": [0.64, 0.33, 0.25], "brown": [0.48, 0.31, 0.25], "yellow": [0.82, 0.70, 0.50], "dark": [0.36, 0.28, 0.25]},
+      "extra_colours": {"salmon": [0.70, 0.42, 0.35], "tan": [0.62, 0.50, 0.38]}},
     "wood": {"bay": 3.6, "colours": {
       "falu": [0.56, 0.18, 0.14], "yellow": [0.91, 0.79, 0.47], "white": [0.93, 0.93, 0.90], "grey": [0.63, 0.67, 0.69],
-      "green": [0.47, 0.57, 0.46], "blue": [0.50, 0.60, 0.72]}},
+      "green": [0.47, 0.57, 0.46], "blue": [0.50, 0.60, 0.72]},
+      "extra_colours": {"teal": [0.22, 0.47, 0.46], "pale": [0.76, 0.79, 0.80], "pine": [0.74, 0.52, 0.30], "cream": [0.86, 0.80, 0.64],
+        "ochre": [0.76, 0.60, 0.34], "petrol": [0.20, 0.33, 0.40], "brown": [0.40, 0.29, 0.21], "weathered": [0.43, 0.42, 0.40], "black": [0.12, 0.12, 0.12]}},
     "stone": {"bay": 3.4, "colours": {
       "limestone": [0.80, 0.76, 0.66], "grey": [0.60, 0.60, 0.58], "sandstone": [0.78, 0.64, 0.48]}},
     "concrete": {"bay": 3.0, "colours": {"light": [0.76, 0.75, 0.72], "dark": [0.54, 0.54, 0.52]}},
@@ -21,7 +25,8 @@
   },
   "roof_styles": {
     "tiles": {"colours": {"red": [0.62, 0.30, 0.22], "brown": [0.42, 0.27, 0.21], "dark": [0.24, 0.22, 0.22]}},
-    "metal": {"colours": {"grey": [0.45, 0.47, 0.48], "red": [0.52, 0.20, 0.16], "black": [0.16, 0.17, 0.18], "copper": [0.33, 0.55, 0.47]}},
+    "metal": {"colours": {"grey": [0.45, 0.47, 0.48], "red": [0.52, 0.20, 0.16], "black": [0.16, 0.17, 0.18], "copper": [0.33, 0.55, 0.47]},
+      "extra_colours": {"mint": [0.62, 0.80, 0.70], "signgreen": [0.10, 0.52, 0.24], "green": [0.30, 0.44, 0.32], "gold": [0.80, 0.62, 0.26], "patina": [0.27, 0.42, 0.36]}},
     "slate": {"colours": {"dark": [0.26, 0.27, 0.30]}},
     "flat": {"colours": {"tar": [0.22, 0.22, 0.23], "gravel": [0.48, 0.46, 0.43]}}
   },

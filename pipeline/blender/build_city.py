@@ -130,6 +130,12 @@ for x0, y0, x1, y1 in DATA['bridge_edges']:
 h = DATA['half'] + 400
 geo.quad([(-h, -h, wz), (h, -h, wz), (h, h, wz), (-h, h, wz)], 'M_Water', uvscale=8.0)
 geo.to_object('SM_Ground_Edges_Water', G, 'base', M)
+# Rivers and ponds above the main water (terrain) have their own flat surface.
+for i, wb in enumerate(DATA.get('water_bodies', [])):
+    assemble(f'SM_Water_Raised_{i}', [(wb['mesh'], 'M_Water')], G, 'base', {'wb_keep_z': 1})
+# The surroundings beyond the play area: fields and forest on the terrain.
+for kind, mesh in DATA.get('outskirts', {}).items():
+    assemble(f'SM_Ground_Outskirts_{kind.title()}', [(mesh, f'M_Ground_{kind.title()}')], G, 'base', {'wb_layer': f'outskirts_{kind}'})
 log('curbs, quays, bridges and water')
 
 # ------------------------------------------------------------------------------------------ buildings
@@ -144,29 +150,46 @@ role_mat = {
     'roof': lambda b: f'M_Roof_{b["roof_style"].title()}_{b["roof_colour"]}',
     'flat': lambda b: f'M_Roof_Flat_{b["roof_colour"] if b["roof_style"] == "flat" else "tar"}',
 }
-n_custom = 0
-for b in DATA['buildings']:
-    tile = tile_of(b['cell'])
-    if b['id'] in custom:
-        continue  # built below by its own script
+n_custom, failed = 0, set()
+
+
+def build_generated(b):
     name = f'SM_Building_{b["id"]}'
     if b.get('landmark') and b.get('name'):
         name = f'SM_Landmark_{b["id"]}_{citylib.safe(b["name"])}'
-    obj = assemble(name, [(b['parts'].get(r), fn(b)) for r, fn in role_mat.items()], LM if b.get('landmark') else B, tile,
-                   {'wb_building': b['id'], 'wb_kind': b['kind'], 'wb_style': f'{b["style"]}/{b["colour"]}', 'wb_roof': f'{b["roof_style"]}/{b["roof_colour"]}',
-                    'wb_height': b['h'], 'wb_levels': b['levels']})
+    assemble(name, [(b['parts'].get(r), fn(b)) for r, fn in role_mat.items()], LM if b.get('landmark') else B, tile_of(b['cell']),
+             {'wb_building': b['id'], 'wb_kind': b['kind'], 'wb_style': f'{b["style"]}/{b["colour"]}', 'wb_roof': f'{b["roof_style"]}/{b["roof_colour"]}',
+              'wb_height': b['h'], 'wb_levels': b['levels']})
+
+
+by_id = {b['id']: b for b in DATA['buildings']}
+for b in DATA['buildings']:
+    if b['id'] not in custom:
+        build_generated(b)
 for bid, script in sorted(custom.items()):
-    b = next((x for x in DATA['buildings'] if x['id'] == bid), None)
+    b = by_id.get(bid)
     ctx = citylib.CustomContext(bid, b, M, coll('Custom buildings'), tile_of(b['cell']) if b else None, DATA)
-    code = compile(script.read_text(), str(script), 'exec')
-    exec(code, {'ctx': ctx, 'Geo': Geo, 'math': math, 'citylib': citylib, '__name__': 'custom'})
-    ctx.finish()
-    n_custom += 1
-log('buildings', len(DATA['buildings']), 'custom', n_custom)
+    try:
+        code = compile(script.read_text(), str(script), 'exec')
+        exec(code, {'ctx': ctx, 'Geo': Geo, 'math': math, 'citylib': citylib, '__name__': 'custom'})
+        ctx.finish()
+        n_custom += 1
+    except Exception as e:                                   # one broken script must not stop the city
+        import traceback
+        tb = traceback.extract_tb(e.__traceback__)
+        where = next((f'{fr.filename.split("/")[-1]}:{fr.lineno}' for fr in reversed(tb)), '?')
+        print(f'  [custom] FAILED {bid}: {type(e).__name__}: {e} ({where}) — using the generated building', flush=True)
+        for o in ctx.objects:
+            if o and o.name in bpy.data.objects:
+                bpy.data.objects.remove(o)
+        failed.add(bid)
+        if b:
+            build_generated(b)
+log('buildings', len(DATA['buildings']), 'custom', n_custom, 'failed', len(failed))
 
 # ------------------------------------------------------------------------------------------ walls
 W = coll('Walls')
-wall_mat = {'city_wall': 'M_StoneWall', 'wall': 'M_StoneWall', 'hedge': 'M_Hedge', 'retaining_wall': 'M_Concrete'}
+wall_mat = {'city_wall': 'M_StoneWall', 'wall': 'M_StoneWall', 'hedge': 'M_Hedge', 'retaining_wall': 'M_Concrete', 'fence': 'M_Wall_Wood_white_Blank'}
 by_cell = {}
 for w in DATA['walls']:
     by_cell.setdefault((w['kind'], tuple(w['cell'])), []).append((w['mesh'], wall_mat[w['kind']]))
@@ -222,6 +245,29 @@ for cell, cs in cells.items():
     g.to_object(f'SM_Edge_Containers_{cell[0]}_{cell[1]}', E, tile_of(cell), M)
 log('edge containers', len(DATA.get('barriers', [])))
 
+# ------------------------------------------------------------------------------------------ terrain
+# Everything above was built on flat ground; lift it onto the terrain. Buildings move as one piece by
+# their base height and get a foundation where the ground falls away; walls are cut every 7.5 m first.
+TERRAIN = citylib.Terrain(DATA.get('terrain'))
+if TERRAIN:
+    for o in list(W.objects):
+        citylib.subdivide_xy(o, DATA['terrain']['step'])
+    founded = set()
+    for o in list(bpy.data.objects):
+        if o.type != 'MESH' or o.get('wb_keep_z'):
+            continue
+        bid = o.get('wb_building')
+        b = by_id.get(bid) if bid else None
+        if b and bid not in founded:
+            citylib.foundation(o, b, M)
+            founded.add(bid)
+        citylib.lift(o, TERRAIN, b, keep_below=wz + 0.05 if o.name == 'SM_Ground_Edges_Water' else None)
+    t = DATA['terrain']
+    # Kept as a text block for the render scripts (scene properties would be exported into every tile).
+    txt = bpy.data.texts.new('wb_terrain.json')
+    txt.write(json.dumps({'x0': t['x0'], 'y0': t['y0'], 'step': t['step'], 'n': t['n'], 'd': t['d']}))
+    log('terrain', f'{min(t["d"]):.1f}–{max(t["d"]):.1f} m, {len(founded)} buildings on their base')
+
 # ------------------------------------------------------------------------------------------ light, world, cameras
 world = bpy.data.worlds.new('Dusk')
 world.use_nodes = True
@@ -234,7 +280,7 @@ sun.data.energy = 3.5
 sun.data.color = (1.0, 0.78, 0.55)
 sun.rotation_euler = (math.radians(68), 0, math.radians(235))
 scene.collection.objects.link(sun)
-citylib.review_cameras(scene, DATA)
+citylib.review_cameras(scene, DATA, TERRAIN)
 scene.render.resolution_x, scene.render.resolution_y = 1920, 1080
 
 out = CITY / 'city.blend'

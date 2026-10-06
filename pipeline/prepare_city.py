@@ -8,6 +8,11 @@ centrelines for the game's AI and a list of landmarks for Street View refinement
 Units are metres; x = east, y = north, z = up; origin = place centre (see common.Projection).
 Optional per-city overrides from cities/<slug>/overrides.json are applied to buildings
 (height, levels, roof, colours, style) — the Street View refinement step writes that file.
+
+Terrain: with cities/<slug>/terrain.json (fetch_terrain.py) the ground heights round the city are
+cleaned of buildings and trees and stored as a grid (`terrain`); ground layers, curbs, shores and
+rails are cut finely enough to follow it, and every building gets a base height. The Blender builder
+lifts everything onto it. Without that file (or with "defaults": {"terrain": false}) the city is flat.
 """
 from __future__ import annotations
 
@@ -19,6 +24,7 @@ import random
 import re
 from collections import defaultdict
 
+import numpy as np
 import shapely
 from shapely import affinity
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon, box
@@ -26,10 +32,12 @@ from shapely.geometry.polygon import orient
 from shapely.ops import linemerge, polygonize, unary_union
 from shapely.strtree import STRtree
 
-from common import ROOT, city_dir, load_place, projection_for, say, step_done, write_json
+from common import EARTH, ROOT, city_dir, load_place, projection_for, say, step_done, write_json
 
 STYLE = json.loads((ROOT / 'pipeline/style.json').read_text())
 CELL = 60.0
+TSTEP = CELL / 8          # terrain grid and ground subdivision (7.5 m)
+TERRAIN_MARGIN = 450.0    # terrain kept beyond the play area for the surroundings
 
 CAR_WIDTH = {
     'motorway': 12, 'trunk': 11, 'primary': 10, 'secondary': 9, 'tertiary': 8, 'unclassified': 6, 'residential': 6.5,
@@ -298,9 +306,10 @@ def main(argv=None):
         raise SystemExit('osm.json is missing. Run: python3 wasteland.py fetch ' + args.slug)
     proj = projection_for(place)
     osm = OSM(json.loads(osm_path.read_text()), proj)
-    overrides = {}
+    overrides, defaults = {}, {}
     if (folder / 'overrides.json').exists():
         overrides = json.loads((folder / 'overrides.json').read_text()).get('buildings', {})
+        defaults = json.loads((folder / 'overrides.json').read_text()).get('defaults', {})
     half = place['size_m'] / 2
     B = box(-half, -half, half, half)
     country = place.get('country_code', '')
@@ -440,6 +449,16 @@ def main(argv=None):
         for shape, settings in area_rules:
             if shape.contains(p.representative_point()):
                 ov.update(settings)
+        # Area mixes ({"colour_mix": {"falu": 3, "yellow": 1}, …}) pick one value per building, deterministically.
+        # "look_mix" picks "style/colour" pairs and "roof_look_mix" "roof_style/roof_colour" pairs.
+        for key in [k for k in ov if k.endswith('_mix') and k != 'levels_mix']:
+            value = pick(ov.pop(key), (vid, key))
+            if key == 'look_mix':
+                ov['style'], ov['colour'] = value.split('/')
+            elif key == 'roof_look_mix':
+                ov['roof_style'], ov['roof_colour'] = value.split('/')
+            else:
+                ov[key[:-4]] = value
         ov.update(overrides.get(vid) or overrides.get(vid.rstrip('r')) or {})
         if ov.get('hide'):
             continue
@@ -475,6 +494,11 @@ def main(argv=None):
                 levels = 2
             else:
                 levels = 2 + int(h01(vid, 'lv') * 3)
+            if ov.get('levels_mix') and area >= 60:                  # houses only, never sheds and garages
+                levels = int(pick(ov['levels_mix'], (vid, 'levels_mix')))
+            cap = ov.get('max_levels') or defaults.get('max_levels')
+            if levels is not None and cap:
+                levels = min(levels, int(cap))                       # small towns / villa areas: estimates stay low
         if levels is None:
             levels = max(1, round((height - (roof_h or 0)) / storey))
         levels = max(1, min(int(levels), 60))
@@ -524,8 +548,14 @@ def main(argv=None):
     forest = area_union(lambda t: t.get('landuse') == 'forest' or t.get('natural') in ('wood', 'tree_group'))
     field = area_union(lambda t: t.get('landuse') in ('farmland', 'farmyard', 'meadow') and False or t.get('landuse') in ('farmland',))
     dirt = area_union(lambda t: t.get('landuse') in ('brownfield', 'construction', 'landfill', 'quarry', 'railway') or t.get('natural') in ('bare_rock', 'scree', 'mud'))
-    layers = [('asphalt', car_u), ('cobble', cob_u), ('sidewalk', sidewalk), ('paving', pav_u.union(platforms)), ('path', soft_u),
-              ('parking', parking), ('rail', rail_bed), ('pier', pier), ('sand', sand), ('pitch', pitch), ('park', park), ('grass', grass),
+    # Yards: lawn round small houses (villas, terraces, cottages), so residential streets aren't bare dirt.
+    house_polys = [v['poly'] for v in vol_info
+                   if v['kind'] in HOUSE_KINDS or (v['kind'] in ('yes', 'residential') and v['poly'].area < 220 and v['levels'] <= 2)]
+    yards = unary_union([q.buffer(12.0) for q in house_polys]).intersection(B) if house_polys else Polygon()
+    grass = grass.union(yards)
+    # A pier deck beats footpaths mapped along it (their strips would otherwise sit at ground level over the water).
+    layers = [('asphalt', car_u), ('cobble', cob_u), ('sidewalk', sidewalk), ('pier', pier), ('paving', pav_u.union(platforms)), ('path', soft_u),
+              ('parking', parking), ('rail', rail_bed), ('sand', sand), ('pitch', pitch), ('park', park), ('grass', grass),
               ('cemetery', cemetery), ('forest', forest), ('field', field), ('dirt', dirt)]
     taken = FOOT.buffer(-0.05) if not FOOT.is_empty else Polygon()
     # Floating building parts and passage ceilings never cut the ground.
@@ -542,14 +572,18 @@ def main(argv=None):
             layer_geom[name] = g
     rest = land.difference(taken).difference(unary_union(list(layer_geom.values())) if layer_geom else Polygon())
     layer_geom['ground'] = unary_union(clean(rest, 0.3))
+    terrain = load_terrain(folder, proj, half, B, land, water, FOOT, layer_geom.get('forest', Polygon()), defaults)
+    sub = TSTEP if terrain else None
     for name, g in layer_geom.items():
-        out_layers[name] = triangulate_cells(g, surf[name]['z'], half)
+        out_layers[name] = triangulate_cells(g, surf[name]['z'], half, sub)
     stats_layers = {k: round(g.area) for k, g in layer_geom.items()}
     say('  ground layers: ' + ', '.join(f'{k} {v / 1e4:.2f} ha' for k, v in stats_layers.items() if v > 0))
 
     # Curbs: every edge of the raised sidewalk. Shore: land edges facing water (not the box edge).
     curbs = edges_of(layer_geom.get('sidewalk', Polygon()), B)
     shore = edges_of(land, B, exclude=pier)
+    if terrain:                                   # short pieces, so kerbs and quays follow the ground
+        curbs, shore = densify(curbs, TSTEP), densify(shore, TSTEP)
     bridge_edges = []
     if not bridge.is_empty:
         inner_water = water.buffer(-0.4)
@@ -598,6 +632,49 @@ def main(argv=None):
             m = Buf()
             wall_volume(m, q, h)
             walls.append({'kind': kind, 'h': r2(h), 'cell': cell_of(q.centroid), 'mesh': m.dump(), 'poly': ring_list(q.exterior)})
+
+    # Garden hedges and white fences along the street side of house yards, with a gap for the driveway.
+    hard_near = hard.buffer(2.6)
+    n_hedge = 0
+    for v in vol_info:
+        q = v['poly']
+        if not (v['kind'] in HOUSE_KINDS or (v['kind'] in ('yes', 'residential') and q.area < 220 and v['levels'] <= 2)):
+            continue
+        roll = h01(v['id'], 'yard')
+        if roll > 0.8:
+            continue
+        kind = 'hedge' if roll < 0.55 else 'fence'
+        yard = q.buffer(12.0).difference(hard).difference(FOOT.buffer(0.5))
+        inner = yard.buffer(-0.9, join_style=2)
+        if inner.is_empty:
+            continue
+        line = inner.boundary.intersection(hard_near)
+        if line.is_empty or line.length < 4:
+            continue
+        mid = line.interpolate(line.project(q.centroid))
+        line = line.difference(mid.buffer(1.9))
+        h, w = (1.2, 0.8) if kind == 'hedge' else (0.95, 0.14)
+        strip = line.buffer(w / 2, cap_style=2, join_style=2).intersection(land).difference(gates).difference(FOOT)
+        for piece in clean(strip, 0.4):
+            m = Buf()
+            wall_volume(m, piece, h)
+            walls.append({'kind': kind, 'h': r2(h), 'cell': cell_of(piece.centroid), 'mesh': m.dump(), 'poly': ring_list(piece.exterior)})
+            n_hedge += 1
+    say(f'  {n_hedge} garden hedges and fences')
+    garden_trees = []
+    for v in vol_info:
+        q = v['poly']
+        if not (v['kind'] in HOUSE_KINDS or (v['kind'] in ('yes', 'residential') and q.area < 220 and v['levels'] <= 2)):
+            continue
+        for k in range(2):
+            if h01(v['id'], 'gt', k) > 0.55:
+                continue
+            ang = h01(v['id'], 'ga', k) * math.tau
+            r = math.sqrt(q.area) / 2 + 3.5 + h01(v['id'], 'gr', k) * 4
+            pt = Point(q.centroid.x + math.cos(ang) * r, q.centroid.y + math.sin(ang) * r)
+            if land.contains(pt) and not FOOT.buffer(2.0).contains(pt) and not hard.buffer(1.5).contains(pt):
+                garden_trees.append([r2(pt.x), r2(pt.y), round(0.6 + h01(v['id'], 'gs', k) * 0.45, 2),
+                                     'conifer' if h01(v['id'], 'gk', k) < 0.3 else 'leaf'])
 
     # ---------------------------------------------------------------- trees
     rng = random.Random(f'{place["center"]}')
@@ -716,13 +793,31 @@ def main(argv=None):
             lengths[r['name']] += LineString(r['p']).intersection(B).length
     streets = [n for n, _ in sorted(lengths.items(), key=lambda kv: -kv[1])][:40]
 
+    # ---------------------------------------------------------------- terrain: building bases
+    if terrain:
+        for b in buildings:
+            ring = b['footprint']['outer']
+            d = terrain_at(terrain, [p[0] for p in ring], [p[1] for p in ring])
+            lo, hi = float(min(d)), float(max(d))
+            # A little above the lowest corner: the downhill side gets a visible foundation, the uphill
+            # side sits a little in the slope (like a house with a souterrain).
+            b['base'], b['base_min'] = r2(lo + 0.55 * (hi - lo)), r2(lo)
+        rail_lines = [shapely.segmentize(g, TSTEP) for g in rails]
+        tram_lines = [shapely.segmentize(g, TSTEP) for g in tram]
+        say(f'  terrain: {terrain["low"]:.1f}–{terrain["high"]:.1f} m over the ground at the water'
+            + (f', {len(terrain["water_bodies"])} raised water surfaces' if terrain['water_bodies'] else ''))
+    else:
+        rail_lines, tram_lines = rails, tram
+
     # ---------------------------------------------------------------- write
     out = {
         'version': 1, 'place': place, 'half': half, 'cell': CELL, 'water_z': STYLE['water_z'],
         'surfaces': out_layers, 'curbs': curbs, 'shore': shore, 'bridge_edges': bridge_edges,
-        'buildings': buildings, 'walls': walls, 'trees': trees, 'props': props, 'barriers': barriers,
-        'rails': [[[r2(x), r2(y)] for x, y in g.intersection(B).coords] for g in rails if g.intersection(B).geom_type == 'LineString'],
-        'trams': [[[r2(x), r2(y)] for x, y in g.intersection(B).coords] for g in tram if g.intersection(B).geom_type == 'LineString'],
+        'buildings': buildings, 'walls': walls, 'trees': trees + garden_trees, 'props': props, 'barriers': barriers,
+        'rails': [[[r2(x), r2(y)] for x, y in g.intersection(B).coords] for g in rail_lines if g.intersection(B).geom_type == 'LineString'],
+        'trams': [[[r2(x), r2(y)] for x, y in g.intersection(B).coords] for g in tram_lines if g.intersection(B).geom_type == 'LineString'],
+        'terrain': terrain_out(terrain), 'water_bodies': terrain['water_bodies'] if terrain else [],
+        'outskirts': terrain['outskirts'] if terrain else {},
         'roads': [r for r in roads_out if LineString(r['p']).intersects(B)],
         'footprints': [ring_list(q.exterior) for q in footprints] + [w['poly'] for w in walls if w['kind'] == 'city_wall'] + [container_ring(c) for c in barriers],
         'land': [{'outer': ring_list(p.exterior), 'holes': [ring_list(h) for h in p.interiors]} for p in clean(land, 20)],
@@ -754,9 +849,13 @@ def cell_of(pt):
     return [math.floor(pt.x / CELL), math.floor(pt.y / CELL)]
 
 
-def triangulate_cells(g, z, half):
+def triangulate_cells(g, z, half, sub=None):
+    """Triangulate a ground layer per 60 m cell; with `sub` every cell is cut into sub×sub squares first
+    (so the ground can follow the terrain). Whole squares become two triangles."""
     out = []
     n0, n1 = math.floor(-half / CELL), math.floor(half / CELL)
+    k = int(round(CELL / sub)) if sub else 0
+    shapely.prepare(g)
     for i in range(n0, n1 + 1):
         for j in range(n0, n1 + 1):
             c = box(i * CELL, j * CELL, (i + 1) * CELL, (j + 1) * CELL)
@@ -764,10 +863,196 @@ def triangulate_cells(g, z, half):
                 continue
             part = g.intersection(c)
             m = Buf()
-            m.polygon(part, z)
+            if k:
+                a = np.arange(k)
+                xa = np.repeat(i * CELL + a * sub, k)
+                ya = np.tile(j * CELL + a * sub, k)
+                cells = shapely.box(xa, ya, xa + sub, ya + sub)
+                for sq, piece in zip(cells, shapely.intersection(part, cells)):
+                    if piece.is_empty or piece.area < 0.01:
+                        continue
+                    if abs(piece.area - sub * sub) < 1e-6 * sub * sub:
+                        x0, y0, x1, y1 = sq.bounds
+                        m.quad((x0, y0, z), (x1, y0, z), (x1, y1, z), (x0, y1, z),
+                               (x0 / 4, y0 / 4), (x1 / 4, y0 / 4), (x1 / 4, y1 / 4), (x0 / 4, y1 / 4))
+                    else:
+                        m.polygon(piece, z)
+            else:
+                m.polygon(part, z)
             if m:
                 out.append({'cell': [i, j], **m.dump()})
     return out
+
+
+def densify(segs, step):
+    """Split [x0,y0,x1,y1] segments into pieces no longer than `step`."""
+    out = []
+    for x0, y0, x1, y1 in segs:
+        n = max(1, math.ceil(math.hypot(x1 - x0, y1 - y0) / step))
+        for k in range(n):
+            out.append([r2(x0 + (x1 - x0) * k / n), r2(y0 + (y1 - y0) * k / n), r2(x0 + (x1 - x0) * (k + 1) / n), r2(y0 + (y1 - y0) * (k + 1) / n)])
+    return out
+
+
+# ------------------------------------------------------------------------------------------ terrain
+def _bilinear(a, fy, fx):
+    fy = np.clip(fy, 0, a.shape[0] - 1.000001)
+    fx = np.clip(fx, 0, a.shape[1] - 1.000001)
+    y0, x0 = np.floor(fy).astype(int), np.floor(fx).astype(int)
+    ty, tx = fy - y0, fx - x0
+    return ((a[y0, x0] * (1 - tx) + a[y0, x0 + 1] * tx) * (1 - ty) + (a[y0 + 1, x0] * (1 - tx) + a[y0 + 1, x0 + 1] * tx) * ty)
+
+
+def _fill(a, iters=500):
+    """Fill NaN cells smoothly from their surroundings (nearest growth, then Laplace relaxation)."""
+    hole = np.isnan(a)
+    if not hole.any() or hole.all():
+        return np.nan_to_num(a)
+    b = a.copy()
+    while np.isnan(b).any():
+        p = np.pad(b, 1, constant_values=np.nan)
+        nb = np.stack([p[:-2, 1:-1], p[2:, 1:-1], p[1:-1, :-2], p[1:-1, 2:]])
+        cnt = (~np.isnan(nb)).sum(0)
+        grow = np.isnan(b) & (cnt > 0)
+        b[grow] = np.nansum(nb, 0)[grow] / cnt[grow]
+    for _ in range(iters):
+        p = np.pad(b, 1, mode='edge')
+        b[hole] = ((p[:-2, 1:-1] + p[2:, 1:-1] + p[1:-1, :-2] + p[1:-1, 2:]) / 4)[hole]
+    return b
+
+
+def _window(a, r, fn):
+    from numpy.lib.stride_tricks import sliding_window_view
+    yy, xx = np.mgrid[-r:r + 1, -r:r + 1]
+    disk = (yy * yy + xx * xx) <= r * r + 0.5
+    w = sliding_window_view(np.pad(a, r, mode='edge'), (2 * r + 1, 2 * r + 1))
+    return fn(w[..., disk], axis=-1)
+
+
+def _blur(a, sigma):
+    r = max(1, int(3 * sigma))
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    k /= k.sum()
+    for axis in (0, 1):
+        p = np.pad(a, [(r, r) if ax == axis else (0, 0) for ax in (0, 1)], mode='edge')
+        a = sum(k[i] * (p[i:i + a.shape[0], :] if axis == 0 else p[:, i:i + a.shape[1]]) for i in range(2 * r + 1))
+    return a
+
+
+def load_terrain(folder, proj, half, B, land, water, foot, forest, defaults):
+    """Ground heights on a TSTEP grid round the play area, in metres over the flat city's ground level
+    (0 = 1.2 m above the main water, like the flat city). None when there is no terrain.json."""
+    path = folder / 'terrain.json'
+    if defaults.get('terrain') is False or not path.exists():
+        return None
+    src = json.loads(path.read_text())
+    Z = np.array(src['z'], dtype=float).reshape(src['rows'], src['cols'])
+    ext = half + TERRAIN_MARGIN
+    n = int(round(2 * ext / TSTEP)) + 1
+    xs = -ext + np.arange(n) * TSTEP
+    lat = proj.lat0 + xs / EARTH
+    lon = proj.lon0 + xs / proj.kx
+    dsm = _bilinear(Z, ((src['lat0'] - lat) / src['dlat'])[:, None] + 0 * xs[None, :], ((lon - src['lon0']) / src['dlon'])[None, :] + 0 * xs[:, None])
+    X, Y = np.meshgrid(xs, xs)                                   # row = y (south → north), column = x
+
+    def inside(g):
+        return shapely.contains_xy(g, X, Y) if g is not None and not g.is_empty else np.zeros(X.shape, bool)
+    in_b = inside(B.buffer(0.1))
+    wet = inside(water)
+    lake = float(np.median(dsm[wet])) if wet.sum() > 20 else None
+    if lake is not None:                                         # the same water beyond the play area
+        wet |= ~in_b & (np.abs(dsm - lake) < 0.4)
+    # The source is a surface model: cut out mapped buildings and forests and fill them from the open
+    # ground round them; an opening (min, then max, over ~75 m) removes unmapped houses and garden
+    # trees; a blur smooths the 30 m source grid.
+    g = dsm.copy()
+    g[(inside(foot.buffer(4.0)) | inside(forest.buffer(4.0))) & ~wet] = np.nan
+    g = _fill(g)
+    g = _window(_window(g, 5, np.min), 5, np.max)
+    g = _blur(g, 2.0)
+    if lake is None:
+        d = g - float(np.percentile(g[in_b], 1))
+    else:
+        d = g - lake + STYLE['water_z']
+    d *= float(defaults.get('terrain_scale', 1.0))
+    # Water: the main water stays at the flat city's level; a river or pond higher up gets its own
+    # level from its banks (and a water surface of its own in the Blender builder).
+    bank = d.copy()
+    bank[wet] = np.nan
+    bank = _fill(bank, 200)
+    d = np.maximum(d, 0.0)
+    d[wet] = 0.0
+    T = {'x0': float(xs[0]), 'y0': float(xs[0]), 'step': TSTEP, 'n': n, 'd': d}
+    bodies = []
+    raised = np.zeros(d.shape, bool)
+    for p in polys(water):
+        pts = []
+        for ring in [p.exterior, *p.interiors]:
+            ln = ring.difference(B.exterior.buffer(0.5))
+            for part in (ln.geoms if hasattr(ln, 'geoms') else [ln]):
+                if part.length > 0:
+                    pts += [part.interpolate(t) for t in np.arange(0, part.length, 4.0)]
+        if not pts:
+            continue
+        T['d'] = np.maximum(bank, 0.0)
+        level = float(np.percentile(terrain_at(T, [q.x for q in pts], [q.y for q in pts]), 10))
+        T['d'] = d
+        if level < 0.5:
+            continue
+        cells = inside(p)
+        d[cells] = level
+        raised |= cells
+        near = inside(p.buffer(12.0)) & ~cells
+        d[near] = np.maximum(d[near], level + 0.3)
+        m = Buf()
+        m.polygon(p, STYLE['water_z'] + level, 8.0)
+        bodies.append({'z': r2(STYLE['water_z'] + level), 'mesh': m.dump()})
+    T['water_bodies'] = bodies
+    # The smoothing spreads higher ground over the shoreline; let the last 25 m slope down to the
+    # flat city's quay height so beaches meet the main water at a normal kerb.
+    reach = 25.0
+    dist = np.where(wet & ~raised, 0.0, np.inf)
+    for _ in range(int(reach / TSTEP) + 2):
+        p = np.pad(dist, 1, constant_values=np.inf)
+        dist = np.minimum(dist, np.minimum.reduce([p[:-2, 1:-1], p[2:, 1:-1], p[1:-1, :-2], p[1:-1, 2:]]) + TSTEP)
+    d[~raised] *= np.clip(dist / reach, 0.0, 1.0)[~raised]
+    # The surroundings: 15 m squares out to the edge of the terrain, so the horizon has hills instead of
+    # open water. A 30 m model can't tell forest from field, so flat low land becomes field and the
+    # slopes and heights forest (what most Nordic towns have round them).
+    gy, gx = np.gradient(d, TSTEP)
+    flat = _blur(np.hypot(gx, gy), 2.0) < 0.035
+    step = 15.0
+    fields, woods = Buf(), Buf()
+    k = int(round(2 * ext / step))
+    for a in range(k):
+        for c in range(k):
+            x0, y0 = -ext + a * step, -ext + c * step
+            if max(abs(x0 + step / 2), abs(y0 + step / 2)) < half:
+                continue
+            j, i = int(round((y0 + step / 2 - xs[0]) / TSTEP)), int(round((x0 + step / 2 - xs[0]) / TSTEP))
+            if wet[j, i]:
+                continue
+            m = fields if (flat[j, i] and d[j, i] < 20.0) else woods
+            m.quad((x0, y0, 0.0), (x0 + step, y0, 0.0), (x0 + step, y0 + step, 0.0), (x0, y0 + step, 0.0),
+                   (x0 / 6, y0 / 6), ((x0 + step) / 6, y0 / 6), ((x0 + step) / 6, (y0 + step) / 6), (x0 / 6, (y0 + step) / 6))
+    T['outskirts'] = {'field': fields.dump(), 'forest': woods.dump()}
+    T['low'], T['high'] = float(d[in_b].min()), float(d[in_b].max())
+    T['source'], T['attribution'], T['lake'] = src.get('source'), src.get('attribution'), lake
+    return T
+
+
+def terrain_at(T, x, y):
+    """Bilinear terrain height at local points (arrays or lists)."""
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    return _bilinear(T['d'], (y - T['y0']) / T['step'], (x - T['x0']) / T['step'])
+
+
+def terrain_out(T):
+    if not T:
+        return None
+    return {'x0': T['x0'], 'y0': T['y0'], 'step': T['step'], 'n': T['n'], 'lake': T['lake'],
+            'source': T['source'], 'attribution': T['attribution'],
+            'd': [round(float(v), 2) for v in T['d'].ravel()]}
 
 
 def edges_of(g, B, exclude=None):
@@ -853,8 +1138,8 @@ def make_building(v, vol_info, vtree, passage, preset, country):
             style = pick(preset['block'], (vid, 'style'))
         if levels >= 9 and style in ('wood',):
             style = 'concrete'
-    palette = STYLE['wall_styles'][style]['colours']
-    if v['ov'].get('colour') in palette:
+    palette = STYLE['wall_styles'][style]['colours']                     # random picks stay in this set
+    if v['ov'].get('colour') in {**palette, **STYLE['wall_styles'][style].get('extra_colours', {})}:
         wall_col = v['ov']['colour']
     elif wall_rgb:
         wall_col = nearest_key(wall_rgb, palette)
@@ -888,8 +1173,12 @@ def make_building(v, vol_info, vtree, passage, preset, country):
     else:
         roof_style = {'roof_tiles': 'tiles', 'tile': 'tiles', 'tiles': 'tiles', 'clay': 'tiles', 'metal': 'metal', 'copper': 'metal', 'tin': 'metal',
                       'slate': 'slate', 'eternit': 'slate', 'asbestos': 'slate', 'concrete': 'slate', 'tar_paper': 'slate'}.get(roof_mat) or pick(preset['roof'], (vid, 'rs'))
+        if v['ov'].get('roof_style') in ('tiles', 'metal', 'slate'):
+            roof_style = v['ov']['roof_style']
         rpal = STYLE['roof_styles'][roof_style]['colours']
-        if roof_mat == 'copper':
+        if v['ov'].get('roof_colour') in {**rpal, **STYLE['roof_styles'][roof_style].get('extra_colours', {})}:
+            roof_col = v['ov']['roof_colour']
+        elif roof_mat == 'copper':
             roof_col = 'copper'
         elif roof_rgb:
             roof_col = nearest_key(roof_rgb, rpal)
@@ -917,7 +1206,9 @@ def make_building(v, vol_info, vtree, passage, preset, country):
     others = [vol_info[i] for i in vtree.query(p.buffer(0.6))] if vtree is not None else []
     others = [o for o in others if o['id'] != vid]
     shop = (not house) and levels >= 2 and kind not in ('industrial', 'warehouse', 'church', 'cathedral', 'chapel', 'school', 'hospital')
-    g_h = min(STYLE['ground_storey_m'], max(2.8, (H - z0) / levels * 1.15)) if shop else 0
+    if 'shopfront' in v['ov']:
+        shop = bool(v['ov']['shopfront'])
+    g_h = min(STYLE['ground_storey_m'], max(2.8, (H - z0) / levels * 1.15), H - z0) if shop else 0
     passage_cut = p.intersection(passage) if (not passage.is_empty and p.intersects(passage) and z0 < 1) else None
     ph = min(4.2, H * 0.55)
     if passage_cut is not None and passage_cut.area > 2:

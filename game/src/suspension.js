@@ -32,6 +32,7 @@ export function stepSuspension(s,dt,spec,heights,previousSpeed,previousHeading){
     xSlope+=x*dh;xSquare+=x*x;zSlope+=dz*dh;zSquare+=dz*dz;
   }
   xSlope/=xSquare;zSlope/=zSquare;
+  s.grade=clamp(-zSlope,-.5,.5);   // rise per metre ahead: hills slow the car and roll it on (physics.js)
   // Fit the road plane at the chassis centre. The truck's rear tandem is
   // asymmetric, so averaging its six heights would pitch/raise it incorrectly.
   const road=meanHeight-zSlope*meanZ-s.y;

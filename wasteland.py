@@ -39,7 +39,7 @@ GAME = ROOT / 'game'
 VENV = ROOT / '.venv'
 WIN = platform.system() == 'Windows'
 VPY = VENV / ('Scripts/python.exe' if WIN else 'bin/python')
-STEPS = ['fetch', 'prepare', 'textures', 'blender', 'export', 'tiles', 'pack', 'splash']
+STEPS = ['fetch', 'terrain', 'prepare', 'textures', 'blender', 'export', 'tiles', 'pack', 'splash']
 MIN_BLENDER = (4, 2)
 
 B, D, G, Y, R, X = ('\033[1m', '\033[2m', '\033[32m', '\033[33m', '\033[31m', '\033[0m') if sys.stdout.isatty() and not WIN else ('',) * 6
@@ -271,6 +271,8 @@ def cmd_build(a):
         head(f'{step}')
         if step == 'fetch':
             py('fetch_osm.py', slug, *(['--force'] if a.refresh else []))
+        elif step == 'terrain':
+            py('fetch_terrain.py', slug, *(['--force'] if a.refresh else []))
         elif step == 'prepare':
             py('prepare_city.py', slug)
         elif step == 'textures':
@@ -479,7 +481,7 @@ def main():
     p.add_argument('slug', nargs='?')
     p.add_argument('--from', dest='start', choices=STEPS)
     p.add_argument('--only', help='comma separated steps: ' + ','.join(STEPS))
-    p.add_argument('--refresh', action='store_true', help='download OSM data again')
+    p.add_argument('--refresh', action='store_true', help='download OSM data and terrain again')
     p.add_argument('--force-splash', action='store_true')
     p.set_defaults(fn=cmd_build)
     p = sub.add_parser('rebuild', help='prepare → … → pack (after overrides or custom buildings)')

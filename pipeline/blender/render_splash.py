@@ -15,6 +15,9 @@ from pathlib import Path
 import bpy
 from mathutils import Vector
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import citylib  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[2]
 args = sys.argv[sys.argv.index('--') + 1:]
 slug = args[0]
@@ -27,6 +30,7 @@ x, y = sp['x'], -sp['z']
 # Game heading h (counter-clockwise from north) → forward vector in Blender (east, north).
 fx, fy = -math.sin(sp['heading']), math.cos(sp['heading'])
 rx, ry = fy, -fx  # right-hand side of the street
+ground = citylib.Terrain.of_scene()
 
 scene = bpy.context.scene
 for candidate in ('BLENDER_EEVEE', 'BLENDER_EEVEE_NEXT'):  # Blender 5.x / 4.2–4.4
@@ -75,7 +79,8 @@ if car_path.exists():
     for o in roots:
         o.parent = holder
     d, side = 9.0, 1.6
-    holder.location = (x + fx * d + rx * side, y + fy * d + ry * side, 0.05)
+    cx, cy = x + fx * d + rx * side, y + fy * d + ry * side
+    holder.location = (cx, cy, 0.05 + float(ground.at(cx, cy)))
     # glTF cars face -Z in three.js = +Y in Blender after import; turn it towards the camera-left.
     holder.rotation_euler = (0, 0, math.atan2(fy, fx) + math.pi / 2 - math.radians(35))
     for o in new:
@@ -84,8 +89,10 @@ if car_path.exists():
 cam = bpy.data.objects.new('SplashCamera', bpy.data.cameras.new('SplashCamera'))
 cam.data.lens = 24
 cam.data.clip_end = 3000
-cam.location = (x - fx * 1.0 - rx * 1.2, y - fy * 1.0 - ry * 1.2, 1.25)
-target = Vector((x + fx * 30 + rx * 1.2, y + fy * 30 + ry * 1.2, 2.2))
+cx, cy = x - fx * 1.0 - rx * 1.2, y - fy * 1.0 - ry * 1.2
+cam.location = (cx, cy, 1.25 + float(ground.at(cx, cy)))
+tx, ty = x + fx * 30 + rx * 1.2, y + fy * 30 + ry * 1.2
+target = Vector((tx, ty, 2.2 + float(ground.at(tx, ty))))
 direction = target - cam.location
 cam.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
 scene.collection.objects.link(cam)

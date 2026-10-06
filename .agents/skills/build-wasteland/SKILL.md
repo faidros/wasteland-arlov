@@ -33,9 +33,12 @@ python3 wasteland.py new "<place>" --size medium      # small 600 m · medium 10
 ```sh
 python3 wasteland.py build <slug>        # 1–5 minutes; run it in the background and wait
 ```
-Steps: fetch (OSM API, Overpass as backup) → prepare (Shapely) → textures → blender (city.blend) →
-export (tiles) → tiles (meshopt/WebP) → pack (map.json + config.json) → splash (Blender render).
-Resume a failed run with `--from <step>`; `--refresh` downloads OSM data again.
+Steps: fetch (OSM API, Overpass as backup) → terrain (Copernicus DEM heights, ~1 s) → prepare
+(Shapely) → textures → blender (city.blend) → export (tiles) → tiles (meshopt/WebP) → pack (map.json +
+config.json) → splash (Blender render).
+Resume a failed run with `--from <step>`; `--refresh` downloads OSM data and terrain again. Without
+network the terrain step only warns and the city is built flat; run `build <slug> --only terrain` and
+`rebuild <slug>` later to add the hills. Hills and the surroundings beyond the play area come with it.
 
 Check the result before going on:
 ```sh
@@ -58,6 +61,8 @@ Then make it good — edit `theme.json` yourself:
   don't mock real living people.
 - Voice lines (`voice.lines`): `intro` and `win` must name the place; `wave`, `critical`, `repair`,
   `wrecked` are optional overrides. One or two sentences each, ElevenLabs audio tags in brackets.
+- Tactical-map labels come from churches, stations, squares etc.; add others the user cares about
+  with `map_labels` (a landmark name, or `{"name": "The Pier", "lat": …, "lon": …}`).
 - Run `python3 wasteland.py theme <slug>` again to apply text changes.
 
 ## 4. Media (each optional — the game works without them)

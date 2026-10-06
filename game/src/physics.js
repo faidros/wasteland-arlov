@@ -19,6 +19,7 @@ export function stepCar(s,input,dt,car=VEHICLES.interceptor) {
   let accel=forward*car.accel*(1-.45*Math.min(1,v/max));
   if(reverse) accel-=s.speed>.8?30:car.accel*.65;
   if(s.boosting) accel+=19;
+  accel-=9.81*.55*(s.grade||0);    // part of gravity along the slope: arcade cars, not lorries
   let drag=.7+.004*s.speed*s.speed+(input.offroad?3:0);
   s.drift=Boolean(input.handbrake && v>5);
   if(s.drift) drag+=5;

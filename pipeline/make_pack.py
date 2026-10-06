@@ -16,7 +16,7 @@ import shutil
 from shapely.geometry import LineString, Point, Polygon, box
 from shapely.strtree import STRtree
 
-from common import city_dir, load_place, say, step_done, write_json
+from common import city_dir, load_place, projection_for, say, step_done, write_json
 
 DRIVABLE = {'trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'living_street', 'pedestrian', 'service',
             'primary_link', 'secondary_link', 'tertiary_link', 'road', 'busway'}
@@ -44,6 +44,26 @@ def tz(p):
 def dms(v, pos, neg):
     d = abs(v)
     return f'{int(d)}°{int(round((d - int(d)) * 60)):02d}′ {pos if v >= 0 else neg}'
+
+
+def game_terrain(t, half):
+    """The terrain for the game: heights in decimetres every 15 m over the play area (game x = east,
+    z = south: row k is z0 + k*step, column i is x0 + i*step). The game only uses it to find the ground
+    before the tiles have loaded; the meshes themselves carry the exact shape."""
+    if not t:
+        return None
+    import numpy as np
+    d = np.asarray(t['d'], float).reshape(t['n'], t['n'])
+    step, ext = 15.0, half + 30.0
+    xs = np.arange(-ext, ext + step / 2, step)
+    zs = xs.copy()
+    X, Zg = np.meshgrid(xs, zs)
+    fy = np.clip((-Zg - t['y0']) / t['step'], 0, t['n'] - 1.000001)
+    fx = np.clip((X - t['x0']) / t['step'], 0, t['n'] - 1.000001)
+    j, i = np.floor(fy).astype(int), np.floor(fx).astype(int)
+    ty, tx = fy - j, fx - i
+    v = (d[j, i] * (1 - tx) + d[j, i + 1] * tx) * (1 - ty) + (d[j + 1, i] * (1 - tx) + d[j + 1, i + 1] * tx) * ty
+    return {'x0': float(xs[0]), 'z0': float(zs[0]), 'step': step, 'n': len(xs), 'dm': [int(round(h * 10)) for h in v.ravel()]}
 
 
 def copy_media(media, pack):
@@ -104,8 +124,12 @@ def main(argv=None):
         for part in (g.geoms if hasattr(g, 'geoms') else [g]):
             if part.geom_type == 'LineString' and part.length > 1:
                 roads.append({'id': r['id'], 'name': r['name'], 'kind': r['kind'], 'w': r['w'], 'p': [tz(p) for p in part.coords]})
+    attribution = place['attribution']
+    terrain = city.get('terrain')
+    if terrain and terrain.get('attribution'):
+        attribution += ' · ' + terrain['attribution']
     game_map = {'roads': roads, 'buildings': [ring(f) for f in city['footprints'] if len(f) >= 3], 'land': [], 'areas': areas,
-                'attribution': place['attribution'], 'bounds': [-half, -half, half, half]}
+                'attribution': attribution, 'bounds': [-half, -half, half, half], 'terrain': game_terrain(terrain, half)}
     write_json(pack / 'map.json', game_map, compact=True)
 
     # ---------------------------------------------------------------- spawn: a wide named street near the centre
@@ -143,6 +167,20 @@ def main(argv=None):
 
     # ---------------------------------------------------------------- labels, districts, squares, supplies, fires
     labels, seen = [], []
+    # theme.json "map_labels" come first: a landmark/place name, or {"name", "lat", "lon"} for any spot.
+    proj = projection_for(place)
+    named = {n['name'].upper(): n for n in city.get('landmarks', []) + city.get('places', [])}
+    for entry in theme.get('map_labels', []):
+        e = {'name': entry} if isinstance(entry, str) else entry
+        if 'lat' in e:
+            x, y = proj.xy(e['lat'], e['lon'])
+        elif e['name'].upper() in named:
+            x, y = named[e['name'].upper()]['x'], named[e['name'].upper()]['y']
+        else:
+            say(f'  map_labels: no landmark or place called "{e["name"]}" (give lat/lon)')
+            continue
+        labels.append([e.get('label', e['name']).upper(), *tz((x, y))])
+        seen.append((x, y))
     for p in sorted(city.get('places', []), key=lambda p: {'suburb': 0, 'quarter': 1, 'neighbourhood': 2, 'water': 3}.get(p['kind'], 4)):
         if any(math.dist((p['x'], p['y']), s) < 90 for s in seen) or p['name'].upper() in [l[0] for l in labels]:
             continue
@@ -194,7 +232,7 @@ def main(argv=None):
         'spawn': spawn, 'bounds': {'minX': -half - 30, 'maxX': half + 30, 'minZ': -half - 30, 'maxZ': half + 30},
         'labels': labels[:12], 'districts': districts, 'squares': squares, 'crates': crates, 'fires': fires,
         'splash': splash, 'voices': voices, 'music': 'city/audio/music.json' if (audio / 'music.json').exists() else None,
-        'attribution': place['attribution'], 'center': place['center'],
+        'attribution': attribution, 'center': place['center'],
     }
     write_json(pack / 'config.json', config)
     say(f'Pack: map.json ({len(roads)} roads, {len(game_map["buildings"])} footprints), config.json '

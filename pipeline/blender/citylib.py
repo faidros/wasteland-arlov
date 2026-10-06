@@ -66,12 +66,19 @@ class MaterialLibrary:
             return material(name, tex)
         if name.startswith('M_Wall_'):
             style, colour, role = parts[2].lower(), parts[3], parts[4]
-            rgb = self.style['wall_styles'][style]['colours'][colour]
+            ws = self.style['wall_styles'][style]
+            rgb = ws['colours'].get(colour) or ws['extra_colours'][colour]
             return material(name, f'Wall{style.title()}{role}', tint=rgb, ref=0.86)
         if name.startswith('M_Roof_'):
             style, colour = parts[2].lower(), parts[3]
-            rgb = self.style['roof_styles'][style]['colours'][colour]
+            rs = self.style['roof_styles'][style]
+            rgb = rs['colours'].get(colour) or rs['extra_colours'][colour]
             return material(name, f'Roof{style.title()}', tint=rgb, ref=0.82, metallic=0.35 if style == 'metal' else 0.0)
+        if name == 'M_Window_Pane':
+            # Window panes of hand-made buildings: a uniform texture tinted dark (a patterned texture greys out in the
+            # distance mipmaps). The name avoids "glass" (the game makes glass shiny, mirroring the pale haze) but
+            # keeps "window" so hits still sound like glass.
+            return material(name, 'WallGlassBlank', tint=(0.2, 0.23, 0.27), ref=0.8)
         if name.startswith('M_Container_'):
             rgb = CONTAINER_COLOURS.get(parts[2], (0.5, 0.5, 0.5))
             return material(name + '_Metal', 'WallMetalBlank', tint=rgb, ref=0.86, metallic=0.3)
@@ -392,8 +399,9 @@ def container(g, c):
 
 
 # ------------------------------------------------------------------------------------------ cameras
-def review_cameras(scene, data):
+def review_cameras(scene, data, terrain=None):
     half = data['half']
+    lift = (lambda x, y: float(terrain.at(x, y))) if terrain else (lambda x, y: 0.0)
     coll = bpy.data.collections.new('Review cameras')
     scene.collection.children.link(coll)
 
@@ -410,7 +418,8 @@ def review_cameras(scene, data):
     scene.camera = main
     cam('02_Overview_North', (0, half * 1.15, half * 0.75), (0, 0, 0), 28)
     for i, lm in enumerate(data.get('landmarks', [])[:4]):
-        cam(f'{i + 3:02d}_{safe(lm["name"])}', (lm['x'] - 45, lm['y'] - 60, 35), (lm['x'], lm['y'], 8), 30)
+        z = lift(lm['x'], lm['y'])
+        cam(f'{i + 3:02d}_{safe(lm["name"])}', (lm['x'] - 45, lm['y'] - 60, 35 + z), (lm['x'], lm['y'], 8 + z), 30)
 
 
 # ------------------------------------------------------------------------------------------ custom buildings
@@ -500,3 +509,121 @@ def spire(geo, x, y, side, z, height, a=0.0, mat='M_Roof_Metal_copper'):
     apex = (x, y, z + height)
     for i in range(4):
         geo.face([base[i], base[(i + 1) % 4], apex], mat, uvscale=2.0)
+
+
+# ------------------------------------------------------------------------------------------ terrain
+class Terrain:
+    """The ground heights from city.json ('terrain': a square grid of metres over the flat city's ground).
+    Without terrain every height is 0 and the city stays flat."""
+
+    def __init__(self, t):
+        self.t = t
+        if t:
+            self.x0, self.y0, self.step, self.n = t['x0'], t['y0'], t['step'], t['n']
+            self.d = np.asarray(t['d'], np.float64).reshape(self.n, self.n)
+
+    def __bool__(self):
+        return bool(self.t)
+
+    def at(self, x, y):
+        x, y = np.asarray(x, np.float64), np.asarray(y, np.float64)
+        if not self.t:
+            return np.zeros(np.broadcast(x, y).shape)
+        fy = np.clip((y - self.y0) / self.step, 0, self.n - 1.000001)
+        fx = np.clip((x - self.x0) / self.step, 0, self.n - 1.000001)
+        j, i = np.floor(fy).astype(int), np.floor(fx).astype(int)
+        ty, tx = fy - j, fx - i
+        d = self.d
+        return (d[j, i] * (1 - tx) + d[j, i + 1] * tx) * (1 - ty) + (d[j + 1, i] * (1 - tx) + d[j + 1, i + 1] * tx) * ty
+
+    @classmethod
+    def of_scene(cls, scene=None):
+        """The terrain stored in a built city.blend (the text block 'wb_terrain.json')."""
+        import json
+        txt = bpy.data.texts.get('wb_terrain.json')
+        return cls(json.loads(txt.as_string()) if txt else None)
+
+
+def subdivide_xy(obj, step):
+    """Cut a mesh along x and y grid lines `step` apart (long walls and hedges, so they can follow the ground)."""
+    import bmesh
+    me = obj.data
+    if not len(me.vertices):
+        return
+    co = np.empty(len(me.vertices) * 3, np.float32)
+    me.vertices.foreach_get('co', co)
+    co = co.reshape(-1, 3)
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    for axis, no in ((0, (1, 0, 0)), (1, (0, 1, 0))):
+        lo, hi = float(co[:, axis].min()), float(co[:, axis].max())
+        for k in range(math.floor(lo / step) + 1, math.ceil(hi / step)):
+            p = [0.0, 0.0, 0.0]
+            p[axis] = k * step
+            bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=p, plane_no=no)
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+
+
+def foundation(obj, b, lib):
+    """A concrete foundation under a building on a slope: from its walls down to the lowest ground corner."""
+    import bmesh
+    drop = b.get('base', 0.0) - b.get('base_min', 0.0)
+    me = obj.data
+    if drop < 0.05 or not len(me.vertices) or not b.get('footprint'):
+        return
+    co = np.empty(len(me.vertices) * 3, np.float32)
+    me.vertices.foreach_get('co', co)
+    if co.reshape(-1, 3)[:, 2].min() > 0.5:                  # a floating part (building:part with min_height)
+        return
+    names = [m.name for m in me.materials]
+    if 'M_Concrete' not in names:
+        me.materials.append(lib.get('M_Concrete'))
+        names.append('M_Concrete')
+    mi = names.index('M_Concrete')
+    ring = ccw([tuple(p) for p in b['footprint']['outer']])
+    z0, z1 = -drop - 0.35, -0.1
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    uv = bm.loops.layers.uv.active or bm.loops.layers.uv.new('UVMap')
+    u = 0.0
+    for (ax, ay), (bx, by) in zip(ring, ring[1:] + ring[:1]):
+        L = math.hypot(bx - ax, by - ay)
+        if L < 0.02:
+            continue
+        vs = [bm.verts.new(p) for p in ((ax, ay, z0), (bx, by, z0), (bx, by, z1), (ax, ay, z1))]
+        f = bm.faces.new(vs)
+        f.material_index = mi
+        for loop, (uu, vv) in zip(f.loops, ((u, z0), (u + L, z0), (u + L, z1), (u, z1))):
+            loop[uv].uv = (uu / 2.0, vv / 2.0)
+        u += L
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+
+
+def lift(obj, terrain, b=None, keep_below=None):
+    """Move a mesh onto the terrain. Buildings (b with a 'base') move as one piece by their base height
+    (everything within 4 m of the footprint); everything else follows the ground vertex by vertex.
+    Vertices below `keep_below` (the water surface, quay foundations) stay where they are."""
+    me = obj.data
+    if not len(me.vertices):
+        return
+    co = np.empty(len(me.vertices) * 3, np.float32)
+    me.vertices.foreach_get('co', co)
+    co = co.reshape(-1, 3).astype(np.float64)
+    M = np.array(obj.matrix_world)
+    w = co @ M[:3, :3].T + M[:3, 3]
+    dz = terrain.at(w[:, 0], w[:, 1])
+    if b is not None and b.get('base') is not None and b.get('footprint'):
+        ring = np.array(b['footprint']['outer'], np.float64)
+        lo, hi = ring.min(0) - 4.0, ring.max(0) + 4.0
+        near = (w[:, 0] >= lo[0]) & (w[:, 0] <= hi[0]) & (w[:, 1] >= lo[1]) & (w[:, 1] <= hi[1])
+        dz = np.where(near, b['base'], dz)
+    if keep_below is not None:
+        dz = np.where(w[:, 2] < keep_below, 0.0, dz)
+    w[:, 2] += dz
+    local = (w - M[:3, 3]) @ np.linalg.inv(M[:3, :3]).T
+    me.vertices.foreach_set('co', local.astype(np.float32).ravel())
+    me.update()
