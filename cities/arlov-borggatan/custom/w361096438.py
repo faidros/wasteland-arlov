@@ -1,7 +1,7 @@
 """Kornvägen: yellow-brick five-storey block with glazed turquoise stair core and garages."""
 import housekit
 
-h = housekit.House(ctx, levels=5, wall='M_Wall_Brick_yellow_Blank',
+h = housekit.House(ctx, levels=8, wall='M_Wall_Brick_yellow_Blank',
                    trim='M_Roof_Metal_grey', lower='M_Wall_Brick_red_Blank', street=[1, 3], party=[])
 wall = 3
 length = h.walls[wall].L
@@ -19,7 +19,7 @@ h.stair_bay(wall, x=core_x, width=core_width, depth=0.85,
 base = h.walls[wall]
 front = housekit.Wall(h.G, base.at(core_x - core_width / 2, 0, 0.91)[:2],
                       base.at(core_x + core_width / 2, 0, 0.91)[:2])
-for floor in range(5):
+for floor in range(8):
     z0 = 0.5 + floor * h.storey
     z1 = z0 + 2.1
     front.rect(0.18, core_width - 0.18, z0, z1, 'M_Window_Pane', scale=1.5)

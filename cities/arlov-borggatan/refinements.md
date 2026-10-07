@@ -3,6 +3,12 @@
 - Added shopfront glazing, fascia signs and awnings for Arlövs Livs Tobak at Lundavägen 27 and Jouren Livs at Lundavägen 65.
 - Anchored each sign to the street-facing wall nearest its mapped business pin; added both businesses to the tactical map labels.
 
+## 2026-10-07 — Asia Restaurang, Dalbyvägen
+
+- Corrected `w1379187969` from the generated four-storey block to the low single-storey storefront row visible in Google Street View (May 2024).
+- OSM maps the building as Chinese fast food and places the named `Asia Restaurang` point inside its footprint. Added a light fascia with red ASIA RESTAURANG lettering and a tactical-map label at the mapped point.
+- The Street View image was used only as reference and was not saved.
+
 ## 2026-10-07 — Sopstationen and Kayas Pizzeria
 
 - `w208687076`, Malmö Sopstation at Lundavägen 13: changed the generated blue-grey three-storey block to the observed two-storey yellow-brick shop with a dark hipped roof, white sign band and red/blue lettering. Reference: Google Street View, October 2024.
@@ -126,6 +132,11 @@ Street View panoramas from November 2020 show the older apartment blocks:
 
 Google images were viewed only as references and not saved to the repository. Four extra blocks in the
 area remain generated estimates.
+
+## Rapsvägen and Kornvägen building heights
+
+Corrected 15 apartment blocks to eight storeys (25.2 m), including the four custom facade models.
+Garage rows, sheds and two large buildings with uncertain non-residential use were left unchanged.
 
 ## 2026-10-07 — Dalbyvägen 4 and Lundavägen 9 signs
 

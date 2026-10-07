@@ -159,6 +159,39 @@
       "height": 9.0,
       "note": "Komvux: two-storey red-brick education building with pale window frames and a dark tiled roof; Google Street View May 2024"
     },
+    "w208687065": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "gabled",
+      "roof_style": "metal",
+      "roof_colour": "grey",
+      "building:levels": 2,
+      "height": 7.6,
+      "shopfront": false,
+      "note": "Hämtpunkten, Borggatan 2: two-storey yellow-brick building, low grey metal roof and glazed entrance under a dark canopy; Google Street View May 2024"
+    },
+    "w1379187971": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "roof_style": "gravel",
+      "roof_colour": "dark",
+      "building:levels": 4,
+      "height": 13.2,
+      "shopfront": false,
+      "note": "Medborgar Huset (Burlövs kommunhus): four-storey red-brown brick civic building with pale window frames and a flat roof; Google Street View June 2022"
+    },
+    "w1379187969": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "height": 4.2,
+      "shopfront": true,
+      "note": "Asia Restaurang, Dalbyvägen: low single-storey storefront row with a red-brick base, glazed shopfronts and a light fascia; Google Street View May 2024. OSM tags the building as Chinese fast food."
+    },
     "w89610464": {
       "style": "brick",
       "colour": "red",
@@ -230,33 +263,88 @@
       "style": "brick",
       "colour": "yellow",
       "roof": "flat",
-      "building:levels": 4,
-      "height": 13.2,
-      "note": "older four-storey yellow-brick apartment block near Rapsvägen with dark metal balconies"
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey yellow-brick apartment block near Rapsvägen with dark metal balconies"
     },
     "w208960541": {
       "style": "brick",
       "colour": "yellow",
       "roof": "flat",
-      "building:levels": 4,
-      "height": 13.2,
-      "note": "older four-storey yellow-brown brick apartment block near Rapsvägen with a vertical band of pink balcony panels"
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey yellow-brown brick apartment block near Rapsvägen with a vertical band of pink balcony panels"
     },
     "w361096438": {
       "style": "brick",
       "colour": "yellow",
       "roof": "flat",
-      "building:levels": 5,
-      "height": 16.2,
-      "note": "older five-storey yellow-brick apartment block by Kornvägen with turquoise glazed stair core and garage doors at ground level"
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey yellow-brick apartment block by Kornvägen with turquoise glazed stair core and garage doors at ground level"
     },
     "w36875729": {
       "style": "brick",
       "colour": "yellow",
       "roof": "flat",
-      "building:levels": 4,
-      "height": 13.2,
-      "note": "older four-storey yellow-brick apartment block near Kornvägen with turquoise stair core and dark garage base"
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey yellow-brick apartment block near Kornvägen with turquoise stair core and dark garage base"
+    },
+    "w36875727": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Kornvägen"
+    },
+    "w36875730": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Kornvägen"
+    },
+    "w36875736": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w36875737": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w36875738": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w36875739": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w208960537": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w208960538": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w208960540": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
+    },
+    "w361096436": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Kornvägen"
+    },
+    "w361096437": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "eight-storey apartment block by Rapsvägen"
     },
     "w182238945": {
       "style": "plaster",

@@ -104,6 +104,18 @@
       "label": "KULTURSKOLAN",
       "lat": 55.634060,
       "lon": 13.071960
+    },
+    {
+      "name": "Hämtpunkten",
+      "label": "HÄMTPUNKTEN",
+      "lat": 55.630179,
+      "lon": 13.0700691
+    },
+    {
+      "name": "Asia Restaurang",
+      "label": "ASIA RESTAURANG",
+      "lat": 55.6325205,
+      "lon": 13.0728923
     }
   ],
   "spawn": {
