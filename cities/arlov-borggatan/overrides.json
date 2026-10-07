@@ -54,6 +54,15 @@
       "shopfront": true,
       "note": "modern public library, red brick, glazed entrance floor, long dark metal balconies on the street facade"
     },
+    "w208685399": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "shopfront": true,
+      "note": "Dalbyvägen 4, four-storey red-brick apartment block with white balconies and Arlövs kebab at ground level"
+    },
     "w357244347": {
       "style": "plaster",
       "colour": "blue",

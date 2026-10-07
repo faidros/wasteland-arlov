@@ -20,6 +20,12 @@
       "label": "ARLÖVS TEATER",
       "lat": 55.629034,
       "lon": 13.070355
+    },
+    {
+      "name": "Arlövs kebab",
+      "label": "ARLÖVS KEBAB",
+      "lat": 55.6326645,
+      "lon": 13.0721502
     }
   ],
   "spawn": {

@@ -98,3 +98,12 @@ Street View panoramas from November 2020 show the older apartment blocks:
 
 Google images were viewed only as references and not saved to the repository. Four extra blocks in the
 area remain generated estimates.
+
+## 2026-10-07 — Dalbyvägen 4 and Lundavägen 9 signs
+
+OSM names the food node inside `w208685399` **Arlövs kebab**. The four-storey red-brick building now
+has that name on its ground-floor sign band and on the tactical map.
+
+Google Maps identifies Lundavägen 9 as **OKQ8 Automat** (24-hour, diesel). OSM has no building
+footprint for its forecourt, so an independent, coordinate-anchored model supplies a roadside pylon,
+canopy and four pumps. The nearby Sopstationen building is left unchanged.
