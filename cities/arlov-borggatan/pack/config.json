@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "slug": "arlov-borggatan",
+  "name": "Arlöv",
+  "vehicle_insignia": "kal p dal",
+  "title": {
+    "top": "ARLÖV",
+    "bottom": "WASTELAND"
+  },
+  "page_title": "Arlöv Wasteland · Stridsbilar",
+  "wordmark": "A / W",
+  "coordinates": "ARLÖV, SVERIGE <i></i> 55°38′ N / 13°05′ E",
+  "text": {
+    "eyebrow": "GATORNA ÄR ERA. TA ER HEM IGEN.",
+    "tagline": "Samma gator. Nya regler.",
+    "intro": "Ta en bepansrad kärra ut på Arlövs gator.<br>Håll undan röjarna, samla skrot och ta dig hem.",
+    "win_eyebrow": "ARLÖV ÄR ERT",
+    "start_roam": "KÖR I ARLÖV",
+    "explore": "UTFORSKA ARLÖV",
+    "loading": "Laddar Arlöv…",
+    "ready": "Arlöv är redo",
+    "map_title": "ARLÖV / STRIDSKARTA",
+    "description": "Pansrade bilar. Arlövs riktiga gator. Strid genom ett öppet 3D-landskap."
+  },
+  "room": "ARLOV",
+  "spawn": {
+    "x": -367.45,
+    "z": 469.79,
+    "heading": -1.3274,
+    "street": "Borggatan"
+  },
+  "bounds": {
+    "minX": -830.0,
+    "maxX": 830.0,
+    "minZ": -830.0,
+    "maxZ": 830.0
+  },
+  "labels": [
+    [
+      "BURLÖV CENTER",
+      224.7,
+      -534.4
+    ],
+    [
+      "ARLÖVS TEATER",
+      -656.3,
+      653.0
+    ],
+    [
+      "ARLÖV",
+      -191.6,
+      -323.0
+    ],
+    [
+      "SVENSHÖGSPARKEN",
+      387.8,
+      231.8
+    ],
+    [
+      "ARLÖVS KYRKA",
+      -166.4,
+      -23.2
+    ],
+    [
+      "SCIENTOLOGI-KYRKAN I MALMÖ",
+      -794.3,
+      496.2
+    ]
+  ],
+  "districts": [],
+  "squares": [],
+  "crates": [
+    [
+      387.8,
+      231.8
+    ],
+    [
+      224.7,
+      -534.5
+    ],
+    [
+      -161.7,
+      -722.5
+    ],
+    [
+      -574.8,
+      52.6
+    ],
+    [
+      -66.1,
+      232.6
+    ]
+  ],
+  "fires": [
+    [
+      -339.5,
+      434.5
+    ],
+    [
+      -442.8,
+      443.0
+    ],
+    [
+      -379.8,
+      579.1
+    ]
+  ],
+  "splash": "city/splash.jpg",
+  "voices": [],
+  "music": null,
+  "attribution": "Map data © OpenStreetMap contributors (ODbL) · Terrain: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European Union and ESA",
+  "center": [
+    55.6349,
+    13.0808
+  ]
+}

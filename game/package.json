@@ -7,6 +7,7 @@
     "arena": "node server/index.mjs",
     "dev": "vite --host 0.0.0.0 --port 5220",
     "build": "vite build && node deploy/prepare-web.mjs",
+    "vercel-build": "node deploy/prepare-city-for-vercel.mjs && vite build && node deploy/prepare-web.mjs",
     "preview": "vite preview --host 0.0.0.0 --port 5220",
     "models": "\"${BLENDER:-/Applications/Blender.app/Contents/MacOS/Blender}\" --background --factory-startup --python tools/build-vehicles.py",
     "test": "node --test test/*.test.mjs"

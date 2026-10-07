@@ -67,6 +67,14 @@ Upload the **contents** of `game/dist/` (including `.htaccess` and the `city/` f
 host, in any sub-folder — all URLs are relative. Without `ARENA_URL` the site works fine, only the
 Online Arena mode is unavailable.
 
+### Vercel with GitHub
+
+The repository-root `vercel.json` selects a static build instead of detecting the Python city-builder.
+It installs and builds the Vite app in `game/`; `prepare-city-for-vercel.mjs` copies the committed
+`cities/<slug>/pack` into `game/public/city` on a clean Vercel checkout. The build defaults to
+`arlov-borggatan`; set `WASTELAND_CITY` in Vercel's Build Environment Variables to deploy another
+committed city pack. Online Arena remains disabled unless `ARENA_URL` is configured.
+
 To try the arena locally without a server: `npm run dev` already serves a relay at `/arena/ws`;
 open the game in two browser windows, choose ONLINE ARENA and the same room code.
 
