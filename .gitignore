@@ -11,6 +11,11 @@ __pycache__/
 cache/
 cities/*
 !cities/README.md
+!cities/arlov-borggatan/
+cities/arlov-borggatan/*
+!cities/arlov-borggatan/pack/
+cities/arlov-borggatan/pack/*
+!cities/arlov-borggatan/pack/**
 game/public/city
 game/public/city-slug.txt
 game/dist/
