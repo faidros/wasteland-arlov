@@ -100,3 +100,5 @@ ctx.geo.cyl(tower_x, tower_y, tower_eave, 2.05, 1.2, ROOF,
             seg=16, r2=1.45, cap=False)
 ctx.geo.cyl(tower_x, tower_y, tower_eave + 1.2, 1.48, 6.2,
             'M_Roof_Metal_green', seg=16, r2=0.0, cap=False)
+h.sign("MAGILLY'S", wall=2, x=20.0, z=3.38, size=0.62,
+    mat='M_Wall_Plaster_yellow_Blank', board='M_Wall_Brick_brown_Blank')

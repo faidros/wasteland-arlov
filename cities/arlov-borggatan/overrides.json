@@ -96,6 +96,79 @@
       "shopfront": true,
       "note": "Arlövs Livs Tobak, Lundavägen 27: long yellow-beige brick block with shop glazing, red awnings, and a blue fascia with yellow ARLOVS LIVS TOBAK lettering"
     },
+    "w208687076": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "hipped",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.6,
+      "shopfront": true,
+      "note": "Malmö Sopstation, Lundavägen 13: two-storey yellow-brick second-hand shop with a dark hipped tile roof and a white sign with red and blue lettering"
+    },
+    "w182238941": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "hipped",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "height": 4.9,
+      "shopfront": true,
+      "note": "Kayas Pizzeria, Lundavägen 7: low single-storey pale rendered shop with dark shallow hipped roof, turquoise fascia and broad street-facing glazing"
+    },
+    "w89610459": {
+      "style": "brick",
+      "colour": "salmon",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 4,
+      "height": 13.2,
+      "shopfront": true,
+      "note": "Lundavägen multi-tenant block: pale salmon brick, four levels, dark flat roof and a detailed ground-floor storefront row for Arlövs Trafikskola, Veterinär and Sibe Salongen"
+    },
+    "w89610372": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "height": 6.2,
+      "note": "Vårboskolan main wing: low red-brown brick teaching block with pale stone window surrounds, dark plinth and red tiled pitched roof; Google Street View May 2024"
+    },
+    "w89610371": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "height": 5.8,
+      "note": "Vårbo Slöjdsalar: long single-storey workshop wing with dark lower facade, strip-like windows and a shallow tiled roof; Google Street View April 2026"
+    },
+    "w89610443": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 9.0,
+      "note": "Komvux: two-storey red-brick education building with pale window frames and a dark tiled roof; Google Street View May 2024"
+    },
+    "w89610464": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "height": 6.0,
+      "note": "Kulturskolan: low red-brick school wing with large pale-framed windows and a red tiled roof; Google Street View May 2024"
+    },
     "w357244347": {
       "style": "plaster",
       "colour": "blue",
@@ -205,6 +278,39 @@
       "note": "Burlöv Center, single-storey shopping mall with four entrances, glazed shopfronts, entry canopies and roof lanterns"
     }
   },
+  "areas": [
+    {
+      "polygon": [
+        [55.62686765, 13.06886313],
+        [55.62687398, 13.06865381],
+        [55.62693228, 13.06806931],
+        [55.62695658, 13.06801979],
+        [55.62872113, 13.06764958],
+        [55.62875381, 13.06768456],
+        [55.62908415, 13.06886007],
+        [55.62880129, 13.06972517],
+        [55.62874115, 13.06985461],
+        [55.62871600, 13.06987313],
+        [55.62705423, 13.06960158],
+        [55.62703125, 13.06956483]
+      ],
+      "buildings": {
+        "look_mix": {
+          "brick/red": 4,
+          "brick/brown": 2,
+          "brick/yellow": 1
+        },
+        "roof": "gabled",
+        "roof_look_mix": {
+          "tiles/dark": 3,
+          "tiles/red": 2
+        },
+        "levels_mix": {
+          "1": 1
+        }
+      }
+    }
+  ],
   "roads": {
     "Dalbyvägen": {
       "surface": "asphalt",

@@ -3,6 +3,29 @@
 - Added shopfront glazing, fascia signs and awnings for Arlövs Livs Tobak at Lundavägen 27 and Jouren Livs at Lundavägen 65.
 - Anchored each sign to the street-facing wall nearest its mapped business pin; added both businesses to the tactical map labels.
 
+## 2026-10-07 — Sopstationen and Kayas Pizzeria
+
+- `w208687076`, Malmö Sopstation at Lundavägen 13: changed the generated blue-grey three-storey block to the observed two-storey yellow-brick shop with a dark hipped roof, white sign band and red/blue lettering. Reference: Google Street View, October 2024.
+- `w182238941`, Kayas Pizzeria at Lundavägen 7: replaced the generated four-storey salmon block with a low, pale rendered shop, shallow dark roof, turquoise fascia and street-facing glazing. Reference: Google Street View, May 2017.
+- Added both business names to the tactical map labels. Street View imagery was used only as reference and was not saved.
+
+## 2026-10-07 — Allégatan and Magilly's
+
+- Expanded the square play area from 1,600 m to 2,100 m after confirming that 14 of the 32 address-tagged Allégatan houses fell outside the old boundary. Reused the cached OSM geometry and terrain coverage; the newly included rowhouses are generated from their individual mapped footprints.
+- Added a raised MAGILLY'S sign to the Geukahuset wall nearest the mapped Dalbyvägen 1 business pin and added the business to the tactical map.
+- Street View samples from June 2022 show low red-brick rowhouses with tiled roofs and small front gardens. Imagery was viewed only as reference and was not saved.
+
+## 2026-10-07 — Lundavägen storefronts
+
+- Replaced the generic `w89610459` facade with a four-level pale salmon-brick building and a detailed continuous shopfront. Google Street View (May 2024) confirms separate white/blue TRAFIKSKOLA, red VETERINÄR and green Sibe fascia signs.
+- Added the three mapped business labels. Added a fourth BOYS SALONG fascia at the far end of the same shop row per user request; its exact unit is not shown in the current map listing or Street View, so that position is approximate.
+
+## 2026-10-07 — Vårboskolan, Komvux and Kulturskolan
+
+- Reworked `w89610372` (Vårboskolan), `w89610371` (Vårbo Slöjdsalar), `w89610443` (Komvux) and `w89610464` (Kulturskolan) with detailed housekit facades, entrances and raised signs.
+- Corrected the generated four-storey estimates for the two Vårbo wings and Kulturskolan to low school buildings. Kept Komvux at two storeys. Details follow Google Street View from May 2024 and April 2026: brick walls, pale window surrounds, schoolyard-facing windows and tiled pitched roofs.
+- Added map labels for all four campus buildings. Street imagery was viewed only as reference and was not saved.
+
 # Arlöv Borggatan refinements
 
 ## 2026-10-06 — expanded play area

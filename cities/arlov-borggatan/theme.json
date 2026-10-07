@@ -44,6 +44,66 @@
       "label": "JOUREN LIVS",
       "lat": 55.6363001,
       "lon": 13.0804054
+    },
+    {
+      "name": "Malmö Sopstation",
+      "label": "SOPSTATIONEN",
+      "lat": 55.6304299,
+      "lon": 13.0698291
+    },
+    {
+      "name": "Kayas Pizzeria",
+      "label": "KAYAS PIZZERIA",
+      "lat": 55.6296172,
+      "lon": 13.0690365
+    },
+    {
+      "name": "Magilly's",
+      "label": "MAGILLY'S",
+      "lat": 55.6323811,
+      "lon": 13.0714345
+    },
+    {
+      "name": "Arlövs Trafikskola",
+      "label": "TRAFIKSKOLA",
+      "lat": 55.6326643,
+      "lon": 13.0710707
+    },
+    {
+      "name": "Veterinär",
+      "label": "VETERINÄR",
+      "lat": 55.6328193,
+      "lon": 13.0711999
+    },
+    {
+      "name": "Sibesalongen",
+      "label": "SIBE SALONGEN",
+      "lat": 55.6329182,
+      "lon": 13.0712906
+    },
+    {
+      "name": "Vårboskolan",
+      "label": "VÅRBOSKOLAN",
+      "lat": 55.634215,
+      "lon": 13.071794
+    },
+    {
+      "name": "Vårbo Slöjdsalar",
+      "label": "VÅRBO SLÖJDSALAR",
+      "lat": 55.634651,
+      "lon": 13.072814
+    },
+    {
+      "name": "Komvux",
+      "label": "KOMVUX",
+      "lat": 55.634448,
+      "lon": 13.073036
+    },
+    {
+      "name": "Kulturskolan",
+      "label": "KULTURSKOLAN",
+      "lat": 55.634060,
+      "lon": 13.071960
     }
   ],
   "spawn": {
@@ -85,7 +145,7 @@
     "country": "Sverige",
     "region": "Skåne län",
     "landmarks": [
-      "Vårbo",
+      "Vårboskolan",
       "Scientologi-kyrkan i Malmö",
       "Arlövs kyrka"
     ],
