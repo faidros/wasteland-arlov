@@ -1,5 +1,19 @@
 # Arlöv Borggatan refinements
 
+## 2026-10-06 — expanded play area
+
+Expanded and recentered the square from 1200 m to 1600 m (55.6349, 13.0808) to include Rapsvägen,
+Burlöv Center and the existing Borggatan spawn in one playable map.
+
+Burlöv Center's official visitor information confirms one shopping floor and four entrances. Its OSM
+footprint has 40 outline points and covers the full mall. Replaced the generated two-storey yellow
+block with a low one-storey shell that follows the mapped outline, with four glazed entrances, canopies,
+shopfront glazing, a center sign and roof lanterns. Roof details are an informed interpretation of
+satellite imagery rather than a complete roof survey.
+
+In the Rapsvägen/Kornvägen area, corrected four nearby older apartment blocks and added their observed
+stacked or projecting balconies. Other nearby facades remain generated estimates.
+
 ## 2026-10-06 — Borggatan, first facade pass
 
 Compared four houses with Google Street View panoramas dated December 2020. The imagery was viewed
@@ -32,3 +46,55 @@ Lundavägen frontage) and April 2026 (northern Lundavägen). No Google imagery w
     The full plans cover 34 houses on Dalbyvägen and 63 on Lundavägen; uninspected facades remain
     generated estimates. Painted crossing stripes and the low roadside rail are not modeled by the
     current pipeline.
+
+## 2026-10-06 — Jakob Persvägen
+
+Compared Street View panoramas dated August 2019 at Jakob Pers Plats. The images were viewed only as
+references and were not saved.
+
+- The street is asphalt, with paved pedestrian areas; kept asphalt and made both sidewalks explicit.
+- `w89610407` and `w89610377`: corrected generic plaster to red brick and added the projecting glazed
+    stairwell with red spandrel bands.
+- `w252113047`: corrected generic grey plaster to red brick and added the repeated dark metal balconies.
+- `w357244347`: corrected a generic two-storey brown-brick house to the low blue kiosk/cafe with a
+    glazed service front and red canopy.
+
+The mapped name is `Jakob Persvägen`; the house details are estimates beyond what the 2019 panoramas
+show clearly.
+
+## 2026-10-06 — Grönvägen, Segevägen and Storgatan
+
+Compared Google Street View panoramas from November 2020 (Grönvägen), May 2024 (Segevägen) and the
+Burlövs municipality's 2024 exterior photo and 1970 archival photo for Arlövs teater. Images were
+viewed only as references and were not copied into the repository.
+
+- Made asphalt and both sidewalks explicit on the three streets; filled Storgatan's missing surface
+    tags.
+- `w89605810` and `w89605835` (Grönvägen): corrected the generated tower colours and added repeated
+    balcony/stairwell bays matching the red-brick and pale blocks.
+- `w1379187964` (Segevägen): corrected the rose-plaster guess to a pale facade with brick base and
+    street-side balconies.
+- `w182238945` (Arlövs teater/Hundramannasalen): corrected the four-storey generic block to a
+    single-storey historic hall with attic, ochre plaster, black sheet-metal roof, dormers and dentil
+    cornice. Burlövs municipality dates it to 1892 and lists it as q1-protected; the 2024 palette
+    recalls the original exterior.
+
+Plans cover 9 houses on Grönvägen, 16 on Segevägen and 8 on Storgatan; other facades remain generated
+estimates. Painted road markings and temporary renovation details are not modeled.
+
+## 2026-10-06 — Burlöv Center, Rapsvägen and Kornvägen
+
+Burlöv Center's official visitor information confirms that all shops are on one floor and that the
+mall has four entrances. Its OSM outline contains 40 points and covers roughly 41,800 m². Replaced the
+two-storey yellow placeholder with a low shell following that outline, four glazed entrance bays,
+canopies, a center sign and roof lanterns. The lantern grid is an interpretation of aerial imagery,
+not an exact roof survey.
+
+Street View panoramas from November 2020 show the older apartment blocks:
+- `w208960541` (Rapsvägen): yellow-brown brick and a narrow strip of pink balcony panels.
+- `w36875735` (Rapsvägen): yellow brick and repeated dark balcony rails.
+- `w361096438` (Kornvägen): yellow brick, turquoise stair glazing and garage doors at ground level.
+- `w36875729` (Kornvägen): yellow brick with a narrow turquoise stair core and balconies.
+
+Google images were viewed only as references and not saved to the repository. Four extra blocks in the
+area remain generated estimates.

@@ -53,6 +53,114 @@
       "height": 13.2,
       "shopfront": true,
       "note": "modern public library, red brick, glazed entrance floor, long dark metal balconies on the street facade"
+    },
+    "w357244347": {
+      "style": "plaster",
+      "colour": "blue",
+      "roof": "flat",
+      "building:levels": 1,
+      "height": 3.4,
+      "shopfront": true,
+      "note": "single-storey blue kiosk or cafe, wide service glazing, a long red fascia and red entrance canopy"
+    },
+    "w252113047": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "note": "four-storey red-brick apartment block with repeated projecting balconies and dark metal railings"
+    },
+    "w89610377": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "note": "four-storey red-brick apartment block with a projecting glazed stairwell tower and red spandrel panels"
+    },
+    "w89610407": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "note": "four-storey red-brick apartment block with a projecting glazed stairwell tower and red spandrel panels"
+    },
+    "w89605810": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "building:levels": 10,
+      "height": 31.2,
+      "note": "ten-storey red-brick apartment tower, narrow stacked balcony and stairwell bay"
+    },
+    "w89605835": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "flat",
+      "building:levels": 10,
+      "height": 31.2,
+      "note": "ten-storey pale apartment tower with a narrow stacked balcony bay and open grass verge"
+    },
+    "w1379187964": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "flat",
+      "building:levels": 9,
+      "height": 28.2,
+      "note": "nine-storey pale apartment block with brick ground level and repeated balconies on the street facade"
+    },
+    "w36875735": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "note": "older four-storey yellow-brick apartment block near Rapsvägen with dark metal balconies"
+    },
+    "w208960541": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "note": "older four-storey yellow-brown brick apartment block near Rapsvägen with a vertical band of pink balcony panels"
+    },
+    "w361096438": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "building:levels": 5,
+      "height": 16.2,
+      "note": "older five-storey yellow-brick apartment block by Kornvägen with turquoise glazed stair core and garage doors at ground level"
+    },
+    "w36875729": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "building:levels": 4,
+      "height": 13.2,
+      "note": "older four-storey yellow-brick apartment block near Kornvägen with turquoise stair core and dark garage base"
+    },
+    "w182238945": {
+      "style": "plaster",
+      "colour": "ochre",
+      "roof": "gabled",
+      "roof_style": "metal",
+      "roof_colour": "black",
+      "building:levels": 1,
+      "height": 8.5,
+      "note": "Arlövs teater, historic single-storey hall with attic, golden ochre plaster, black sheet-metal gabled roof, dormers and dentil cornice"
+    },
+    "w89611697": {
+      "style": "concrete",
+      "colour": "light",
+      "roof": "flat",
+      "building:levels": 1,
+      "height": 7.5,
+      "shopfront": true,
+      "note": "Burlöv Center, single-storey shopping mall with four entrances, glazed shopfronts, entry canopies and roof lanterns"
     }
   },
   "roads": {
@@ -61,6 +169,22 @@
       "sidewalk": "both"
     },
     "Lundavägen": {
+      "surface": "asphalt",
+      "sidewalk": "both"
+    },
+    "Jakob Persvägen": {
+      "surface": "asphalt",
+      "sidewalk": "both"
+    },
+    "Grönvägen": {
+      "surface": "asphalt",
+      "sidewalk": "both"
+    },
+    "Segevägen": {
+      "surface": "asphalt",
+      "sidewalk": "both"
+    },
+    "Storgatan": {
       "surface": "asphalt",
       "sidewalk": "both"
     }

@@ -8,7 +8,20 @@
   "page_title": "Arlöv Wasteland · Stridsbilar",
   "room": "ARLÖV",
   "_map_labels_help": "Extra tactical-map labels, shown first: a landmark/place name from facts, or {\"name\": …, \"lat\": …, \"lon\": …}.",
-  "map_labels": [],
+  "map_labels": [
+    {
+      "name": "Burlöv Center",
+      "label": "BURLÖV CENTER",
+      "lat": 55.639701,
+      "lon": 13.084376
+    },
+    {
+      "name": "Arlövs teater",
+      "label": "ARLÖVS TEATER",
+      "lat": 55.629034,
+      "lon": 13.070355
+    }
+  ],
   "spawn": {
     "lat": 55.6305432,
     "lon": 13.0750124,
@@ -63,9 +76,9 @@
       "Segevägen"
     ],
     "center": [
-      55.6341722,
-      13.0763813
+      55.6349,
+      13.0808
     ],
-    "size_m": 1200
+    "size_m": 1600
   }
 }
