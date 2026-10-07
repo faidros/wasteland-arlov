@@ -26,6 +26,24 @@
       "label": "ARLÖVS KEBAB",
       "lat": 55.6326645,
       "lon": 13.0721502
+    },
+    {
+      "name": "Geukahuset",
+      "label": "GEUKAHUSET",
+      "lat": 55.6322567,
+      "lon": 13.0712105
+    },
+    {
+      "name": "Arlövs Livs",
+      "label": "ARLÖVS LIVS TOBAK",
+      "lat": 55.6320306,
+      "lon": 13.0711211
+    },
+    {
+      "name": "Jouren Livs",
+      "label": "JOUREN LIVS",
+      "lat": 55.6363001,
+      "lon": 13.0804054
     }
   ],
   "spawn": {

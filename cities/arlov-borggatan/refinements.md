@@ -1,3 +1,8 @@
+# Arlövs Livs and Jouren Livs
+
+- Added shopfront glazing, fascia signs and awnings for Arlövs Livs Tobak at Lundavägen 27 and Jouren Livs at Lundavägen 65.
+- Anchored each sign to the street-facing wall nearest its mapped business pin; added both businesses to the tactical map labels.
+
 # Arlöv Borggatan refinements
 
 ## 2026-10-06 — expanded play area
@@ -107,3 +112,11 @@ has that name on its ground-floor sign band and on the tactical map.
 Google Maps identifies Lundavägen 9 as **OKQ8 Automat** (24-hour, diesel). OSM has no building
 footprint for its forecourt, so an independent, coordinate-anchored model supplies a roadside pylon,
 canopy and four pumps. The nearby Sopstationen building is left unchanged.
+
+## 2026-10-07 — Geukahuset, Lundavägen 29
+
+Matched address node 29 to OSM building `w357244353`. Replaced the generic five-storey salmon block
+with yellow brick, a stone ground-floor arcade, dark timber framing, two street-facing front gables,
+a steep dark metal roof and a round corner turret with green spire. The reference was Burlövs Bostäders
+Geukahuset exterior photo; it was viewed for architectural details and not copied into the repository.
+Added Geukahuset to the tactical map. Smaller facade details and exact shopfront layouts remain approximate.

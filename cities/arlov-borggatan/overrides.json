@@ -63,6 +63,39 @@
       "shopfront": true,
       "note": "Dalbyvägen 4, four-storey red-brick apartment block with white balconies and Arlövs kebab at ground level"
     },
+    "w357244353": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "gabled",
+      "roof_style": "metal",
+      "roof_colour": "black",
+      "building:levels": 4,
+      "height": 16.0,
+      "shopfront": true,
+      "note": "Geukahuset, Lundavägen 29: historic yellow-brick commercial building with stone arcade, dark half-timbered upper facade, steep black metal roof, two front gables and a round corner turret with green spire"
+    },
+    "w208664733": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 3,
+      "height": 9.8,
+      "shopfront": true,
+      "note": "Jouren Livs, Lundavägen 65: dark yellow-brown brick corner shop with ground-floor glazing, blue and white striped awnings, and a blue JOUREN LIVS sign"
+    },
+    "w89610424": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 4,
+      "height": 12.6,
+      "shopfront": true,
+      "note": "Arlövs Livs Tobak, Lundavägen 27: long yellow-beige brick block with shop glazing, red awnings, and a blue fascia with yellow ARLOVS LIVS TOBAK lettering"
+    },
     "w357244347": {
       "style": "plaster",
       "colour": "blue",
