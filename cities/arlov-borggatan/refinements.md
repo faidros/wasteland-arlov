@@ -1,5 +1,25 @@
 # Arlövs Livs and Jouren Livs
 
+## 2026-10-11 — Kronetorps mölla and Kaprifolvägen rowhouses
+
+- Replaced the ordinary generated building for `w60476160` with a custom Dutch-type windmill model:
+    tapered brick tower, dark timber upper stage, cap and four open lattice sails. Added narrow windows
+    and a timber door. Historical notes identify the mill as dating to 1841.
+- Corrected `w337800702`, `w337800704`, `w337800705`, `w337800707` and `w337800709`
+    (Kaprifolvägen 31–39) to two-storey brown-brick rowhouses with dark tiled gabled roofs, based on
+    Google Street View from April 2024. Their mapped footprints were preserved.
+- Street View was viewed only as reference and was not saved. Nearby houses on Krotonvägen,
+    Kaprifolvägen and Egnahemsvägen remain generated estimates pending further survey.
+
+## 2026-10-11 — SAAB hall and Lidl, Lundavägen
+
+- Kept the full mapped footprint and low industrial mass of `w126909036` by Kal P Dals gata, adding
+    an oversized raised SAAB sign on its longest street-facing facade.
+- Corrected `w249515910` (Lidl, Lundavägen 90) from a generic three-storey brick block to a low,
+    single-storey light-grey metal supermarket with blue entrance details and a raised Lidl sign.
+- Google Street View from July 2019 shows the Lidl hall, light cladding and blue entrance; imagery
+    was used only as reference and was not saved.
+
 - Added shopfront glazing, fascia signs and awnings for Arlövs Livs Tobak at Lundavägen 27 and Jouren Livs at Lundavägen 65.
 - Anchored each sign to the street-facing wall nearest its mapped business pin; added both businesses to the tactical map labels.
 
@@ -147,10 +167,65 @@ Google Maps identifies Lundavägen 9 as **OKQ8 Automat** (24-hour, diesel). OSM 
 footprint for its forecourt, so an independent, coordinate-anchored model supplies a roadside pylon,
 canopy and four pumps. The nearby Sopstationen building is left unchanged.
 
+## 2026-10-10 — Pilevallen and Lommavägen rowhouses
+
+- Added a tightly bounded Pilevallen area rule covering its 99 addressed houses and one unaddressed
+    building. Street View (June 2022) shows mostly low houses with pitched tiled roofs and varied light,
+    brick and occasional blue facades. The generated area now has 91 one-storey and 8 two-storey houses;
+    none exceed two storeys. Existing explicit OSM levels and individual overrides retain priority.
+- Corrected Lommavägen 16–28 (`w208938335`, `w208938338`, `w208938341`, `w208938342`,
+    `w208938339`, `w208938336`, `w208938331`) to the continuous two-storey dark brown-red brick row
+    with dark tiled pitched roofs, based on Street View from October 2024.
+- Street View was used only as reference and was not saved.
+
+## 2026-10-07 — Vårbogatan 1–4
+
+Reviewed the four OSM-addressed houses in April 2026 Street View. Corrected the generated materials,
+roof colours and storeys: number 1 is a two-storey red-brick corner house with three dormers; number 2
+is a white one-and-a-half-storey villa with a red tiled roof, dark green joinery and a small gable
+balcony; number 3 is a white villa with two dormers; number 4 is a low white house with one rooflight.
+Added custom housekit models for numbers 1–3. The garage bearing number 2 is visible in Street View,
+but has no separate OSM footprint; nearby mapped garage ways were left unchanged.
+
+Google labels the panoramas for numbers 1 and 3 as Stora Tvärgatan, although the OSM building ways
+carry Vårbogatan addresses. The Street View images were used only as references and were not saved.
+
 ## 2026-10-07 — Geukahuset, Lundavägen 29
 
 Matched address node 29 to OSM building `w357244353`. Replaced the generic five-storey salmon block
 with yellow brick, a stone ground-floor arcade, dark timber framing, two street-facing front gables,
 a steep dark metal roof and a round corner turret with green spire. The reference was Burlövs Bostäders
 Geukahuset exterior photo; it was viewed for architectural details and not copied into the repository.
-Added Geukahuset to the tactical map. Smaller facade details and exact shopfront layouts remain approximate.
+Added Geukahuset to the tactical map. Added a three-pane display window and interior shelf beneath the
+MAGILLY'S sign at its cafe bay, based on the October 2024 Street View arcade glazing. Smaller facade
+details and exact shopfront layouts remain approximate.
+
+## 2026-10-11 — Preem Rampvägen and Circle K Kronetorpsvägen
+
+- Added standalone station models tied to the mapped fuel nodes and canopy footprints. Both now have
+    branded canopy fascias, support columns, dispenser islands, pump details and double-sided roadside
+    pylons with fuel and opening information.
+- Preem Rampvägen has six dispensers and 24/7 signage; Circle K Kronetorpsvägen has four dispensers
+    and signage matching its mapped 06:00–21:00 hours. Signs face the named public approach roads.
+- The user supplied the Plus Code J3Q5+9R, which resolves to X:-tra Arlövsvägen at OSM building
+    `w208846856`, separate from Preem. Replaced its incorrect generated four-storey block with a
+    one-storey grey-clad grocery store, glazed storefront and road-facing red X-TRA fascia.
+
+## 2026-10-11 — Burlövsbadet and Burlöv Center signs
+
+- Added a large double-sided BURLÖVSBADET sign on the sports centre's nearest road-facing facade.
+- Burlöv Center already has four raised BURLÖV CENTER signs, one on each of four distinct facade
+    sides in its custom model; retained that layout.
+
+## 2026-10-11 — Virvelvägen 301–307 heights
+
+- Corrected buildings `w208718531`, `w208718534`, `w208718533` and `w208718535` (addresses 301,
+    303, 305 and 307) to eight storeys (25.2 m) while preserving their mapped irregular footprints.
+
+## 2026-10-11 — Västra Promenaden 1–7
+
+- Matched entrance nodes 1 and 7 to apartment ways `w208846830` and `w208846829`. Street View from
+    June 2022 shows a five-storey sand-yellow brick frontage, white window surrounds, vertical
+    stairwell bays and glazed entrance areas. Added those details while preserving both footprints
+    and storey counts.
+- Street View imagery was used only as reference and was not saved.

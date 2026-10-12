@@ -1,5 +1,25 @@
 {
   "buildings": {
+    "w60476160": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "black",
+      "building:levels": 6,
+      "height": 24.5,
+      "note": "Kronetorps mölla, built in 1841: tall tapered brick tower, dark timber upper body, rotating cap and four lattice sails; model the historic Dutch windmill rather than an ordinary house"
+    },
+    "w208377595": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "height": 6.8,
+      "note": "Historic miller's house beside Kronetorps mölla: low white plaster house with a steep dark gabled roof, matching the separate house visible beside the mill"
+    },
     "w208689940": {
       "style": "plaster",
       "colour": "white",
@@ -35,6 +55,46 @@
       "roof_colour": "dark",
       "building:levels": 1,
       "note": "1½-storey red brick villa, steep dark tiled gabled roof, decorative light brick bands on the front gable"
+    },
+    "w208684061": {
+      "style": "brick",
+      "colour": "red",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Vårbogatan 1, OSM address: two-storey red-brick corner house with pale window surrounds, a steep red tiled roof and three front dormers; Street View April 2026 labels the panorama 1 Stora Tvärgatan"
+    },
+    "w208684066": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "height": 6.8,
+      "note": "Vårbogatan 2: white plaster villa with a habitable attic, steep red tiled gabled roof, dark green window joinery and a small gable balcony; Street View April 2026"
+    },
+    "w208684057": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "height": 6.8,
+      "note": "Vårbogatan 3, OSM address: white plaster villa with a steep red tiled gabled roof and two front dormers; Street View April 2026 labels the panorama 3 Stora Tvärgatan"
+    },
+    "w208684068": {
+      "style": "plaster",
+      "colour": "white",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "red",
+      "building:levels": 1,
+      "height": 5.8,
+      "note": "Vårbogatan 4: low white plaster house with a red tiled gabled roof, dark window frames and a single rooflight; Street View April 2026"
     },
     "w170849544": {
       "style": "metal",
@@ -364,6 +424,186 @@
       "height": 7.5,
       "shopfront": true,
       "note": "Burlöv Center, single-storey shopping mall with four entrances, glazed shopfronts, entry canopies and roof lanterns"
+    },
+    "w208938335": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 16, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208938338": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 18, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208938341": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 20, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208938342": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 22, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208938339": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 24, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208938336": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 26, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208938331": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Lommavägen 28, two-storey dark brown-red brick rowhouse with a dark tiled pitched roof; Street View October 2024"
+    },
+    "w208718531": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "Virvelvägen 301, eight-storey apartment building; preserve the mapped irregular footprint"
+    },
+    "w208718534": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "Virvelvägen 303, eight-storey apartment building; preserve the mapped irregular footprint"
+    },
+    "w208718533": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "Virvelvägen 305, eight-storey apartment building; preserve the mapped irregular footprint"
+    },
+    "w208718535": {
+      "building:levels": 8,
+      "height": 25.2,
+      "note": "Virvelvägen 307, eight-storey apartment building; preserve the mapped irregular footprint"
+    },
+    "w208846856": {
+      "style": "metal",
+      "colour": "grey",
+      "roof": "flat",
+      "building:levels": 1,
+      "height": 5.2,
+      "shopfront": true,
+      "note": "X-TRA Arlövsvägen at Plus Code J3Q5+9R: low single-storey modern grocery store with grey cladding, glazed storefront and red fascia sign"
+    },
+    "w208846830": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 5,
+      "height": 16.2,
+      "note": "Västra Promenaden 1–3: five-storey warm sand-yellow brick apartment block with white window surrounds, a vertical stairwell bay and glazed entrance; preserve mapped footprint"
+    },
+    "w208846829": {
+      "style": "brick",
+      "colour": "yellow",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 5,
+      "height": 16.2,
+      "note": "Västra Promenaden 5–7: five-storey warm sand-yellow brick apartment block with white window surrounds, a vertical stairwell bay and glazed entrance; preserve mapped footprint"
+    },
+    "w337800702": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Kaprifolvägen 31: two-storey rowhouse with a tan brick upper facade, dark timber entrance and garage bays, and a shallow dark tiled gable roof; Google Street View April 2024"
+    },
+    "w337800704": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Kaprifolvägen 33: two-storey rowhouse with a tan brick upper facade, dark timber entrance and garage bays, and a shallow dark tiled gable roof; Google Street View April 2024"
+    },
+    "w337800705": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Kaprifolvägen 35: two-storey rowhouse with a tan brick upper facade, dark timber entrance and garage bays, and a shallow dark tiled gable roof; Google Street View April 2024"
+    },
+    "w337800707": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Kaprifolvägen 37: two-storey rowhouse with a tan brick upper facade, dark timber entrance and garage bays, and a shallow dark tiled gable roof; Google Street View April 2024"
+    },
+    "w337800709": {
+      "style": "brick",
+      "colour": "brown",
+      "roof": "gabled",
+      "roof_style": "tiles",
+      "roof_colour": "dark",
+      "building:levels": 2,
+      "height": 7.2,
+      "note": "Kaprifolvägen 39: two-storey rowhouse with a tan brick upper facade, dark timber entrance and garage bays, and a shallow dark tiled gable roof; Google Street View April 2024"
+    },
+    "w249515910": {
+      "style": "metal",
+      "colour": "grey",
+      "roof": "flat",
+      "roof_style": "metal",
+      "roof_colour": "dark",
+      "building:levels": 1,
+      "height": 5.5,
+      "shopfront": true,
+      "note": "Lidl, Lundavägen 90: low single-storey light-grey metal-clad supermarket with a blue entrance bay and prominent blue, yellow and red Lidl sign; Google Street View July 2019"
     }
   },
   "areas": [
@@ -396,6 +636,46 @@
         "levels_mix": {
           "1": 1
         }
+      }
+    },
+    {
+      "polygon": [
+        [55.635591, 13.059497],
+        [55.635509, 13.059786],
+        [55.635318, 13.060480],
+        [55.635141, 13.061165],
+        [55.634642, 13.063741],
+        [55.634484, 13.064923],
+        [55.634697, 13.065245],
+        [55.634895, 13.065515],
+        [55.634974, 13.065583],
+        [55.635022, 13.065516],
+        [55.635041, 13.065444],
+        [55.635060, 13.065377],
+        [55.636089, 13.061586],
+        [55.636531, 13.059912],
+        [55.636455, 13.059845]
+      ],
+      "buildings": {
+        "look_mix": {
+          "plaster/white": 3,
+          "plaster/grey": 2,
+          "plaster/beige": 2,
+          "plaster/blue": 1,
+          "brick/red": 2,
+          "brick/brown": 1
+        },
+        "roof": "gabled",
+        "roof_look_mix": {
+          "tiles/dark": 4,
+          "tiles/brown": 1,
+          "tiles/red": 1
+        },
+        "levels_mix": {
+          "1": 4,
+          "2": 1
+        },
+        "max_levels": 2
       }
     }
   ],

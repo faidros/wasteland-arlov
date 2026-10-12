@@ -102,3 +102,13 @@ ctx.geo.cyl(tower_x, tower_y, tower_eave + 1.2, 1.48, 6.2,
             'M_Roof_Metal_green', seg=16, r2=0.0, cap=False)
 h.sign("MAGILLY'S", wall=2, x=20.0, z=3.38, size=0.62,
     mat='M_Wall_Plaster_yellow_Blank', board='M_Wall_Brick_brown_Blank')
+
+# Distinguish Magilly's cafe window from the neighboring arcade shopfronts.
+cafe_wall = h.walls[2]
+cafe_center = 20.0
+window_left, window_right = cafe_center - 1.65, cafe_center + 1.65
+for x in (window_left, cafe_center - 0.55, cafe_center + 0.55, window_right):
+    cafe_wall.rect(x - 0.06, x + 0.06, 0.3, 2.9, TIMBER, 0.12)
+cafe_wall.ledge(window_left, window_right, 1.45, 1.56, TIMBER, 0.12)
+cafe_wall.ledge(window_left + 0.18, window_right - 0.18, 0.9, 1.02,
+                TIMBER, -0.42)
